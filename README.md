@@ -216,10 +216,41 @@ greenfield는 "앞으로 만들 것"을 적지만 brownfield는 **이미 만든 
 `~/.claude/CLAUDE.md`의 `@import` 목록에 등록하는 방식. 그러면 **모든 신규 프로젝트가
 별도 복사 없이 룰을 자동 상속**합니다.
 
-**적용 방법**:
-- 신규 3종(`decisions.md`·`requirements.md`·`ui-mockups.md`)을 `~/.claude/rules/`에 추가.
-- 나머지(project-init·planning·validation·conventions·readme-sync)는 기존 글로벌 룰이 있으면 항목 보강으로 흡수.
-- `~/.claude/CLAUDE.md`의 `@import` 목록에 새 룰 파일을 추가.
+**적용 방법** (3단계):
+
+**1. 신규 3종 룰 복사**
+`decisions.md`·`requirements.md`·`ui-mockups.md`를 `~/.claude/rules/`로 복사한다. 이 셋은
+기존 글로벌 룰에 없던 방법론 신규 항목이라 충돌 없이 그대로 추가된다.
+
+**2. 기존 5종 룰은 덮어쓰지 말고 "항목 보강"으로 병합**
+`project-init`·`planning`·`validation`·`conventions`·`readme-sync`는 이름이 같아 이미
+글로벌에 있을 가능성이 크다. 통째 교체하면 기존 커스터마이징이 사라지므로 **병합**한다.
+- 템플릿 버전과 기존 글로벌 버전을 **나란히 비교(diff)** 한다.
+- 템플릿에만 있는 방법론 항목만 골라 기존 파일의 해당 절/끝에 **추가**한다. 예:
+  - `planning.md` → "워크플로 게이트"(brainstorming→plan→구현→갱신)
+  - `conventions.md` → "외부 의존성 호환 버전 고정 + 근거 기록"
+  - `readme-sync.md` → "완료 시 자동 갱신 묶음"(현황표·todo·changelog·README·가이드)
+  - `requirements`(신규)와의 상호링크(요구사항 2분할·구현현황표)
+- 같은 주제가 서로 다르게 적혀 **충돌**하면, 어느 쪽을 정본으로 둘지 정하고 한쪽만 남긴다(중복 금지).
+- 신규 3종을 가리키는 상호링크(예: `→ decisions.md`)가 실제로 연결되는지 확인한다.
+
+**3. `~/.claude/CLAUDE.md`의 `@import` 목록에 신규 룰 등록**
+`@import`는 세션 시작 시 각 파일을 컨텍스트로 자동 로드하는 지시다. 기존 import 목록에
+**신규 3종 줄만** 추가한다(기존 5종은 이미 import돼 있으면 중복 추가 금지).
+```
+@~/.claude/rules/project-init.md
+@~/.claude/rules/planning.md
+@~/.claude/rules/requirements.md   ← 추가
+@~/.claude/rules/decisions.md      ← 추가
+@~/.claude/rules/ui-mockups.md     ← 추가
+@~/.claude/rules/validation.md
+@~/.claude/rules/conventions.md
+@~/.claude/rules/readme-sync.md
+```
+- **순서**: 프로세스 룰(planning·requirements·decisions·ui-mockups)을 구현·검증 룰
+  (validation·conventions) **앞**에 두면 "먼저 생각하고 나중에 코딩" 흐름과 일치한다.
+- **적용 확인**: 아무 프로젝트에서 새 세션을 열어 룰이 실제로 걸리는지 본다(예: 대안 선택
+  시 DEC 로깅을 시도하는지, UI 작업에서 목업 게이트를 요구하는지).
 
 **이 템플릿과의 관계**: 이 레포는 자체 완결형(`.claude/CLAUDE.md`가 로컬 룰을 `@import`)이라
 글로벌 룰 없이도 동작합니다. 둘은 **병행 가능** — 글로벌 룰로 기본값을 깔고, 템플릿으로
