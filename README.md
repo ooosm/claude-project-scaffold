@@ -102,7 +102,18 @@ claude_template/
 
 ---
 
-## 새 프로젝트 부트스트랩
+## 적용 방법
+
+이 템플릿은 **신규(greenfield)** 프로젝트를 1차 타겟으로 하지만, **기존(brownfield)**
+프로젝트에도 적용할 수 있습니다. 둘은 룰이 같고 **도입 절차만 다릅니다** — greenfield는
+"폴더 통째 복사", brownfield는 "선별 병합(merge)"입니다.
+
+> ⚠️ **공통 함정**: brownfield에서 `cp -r`로 통째 덮어쓰면 기존 `CLAUDE.md`·`README.md`가
+> 사라집니다. 기존 프로젝트에는 반드시 아래 **선별 병합** 절차를 따르세요.
+
+### 신규 프로젝트(greenfield)에 적용 — 폴더 통째 복사
+
+빈 프로젝트라 충돌이 없으므로 전체 구조를 그대로 가져옵니다.
 
 ```
 1. 이 폴더 전체를 새 프로젝트 위치로 복사한다.
@@ -114,6 +125,53 @@ claude_template/
 5. _TEMPLATE-*.md(spec/plan 템플릿)는 남겨 두고, 실제 작업은 복사해서 만든다.
 6. 첫 작업은 brainstorming → spec 으로 시작한다(코딩 먼저 금지).
 7. 불필요한 템플릿 안내 파일(_skeleton-README.md 등)을 삭제한다.
+```
+
+### 기존 프로젝트(brownfield)에 적용 — 선별 병합
+
+이미 코드·`CLAUDE.md`·`README`·git 히스토리가 있으므로 **통째 복사 금지**.
+바뀌는 건 룰이 아니라 도입 절차뿐입니다(룰 자체는 이미 brownfield 우선 원칙을 따름 —
+`rules/project-init.md`의 Brownfield 주의사항, `rules/conventions.md` 참조).
+
+**① 그대로 복사해도 안전한 것** (순수 방법론, 기존 코드 무영향)
+
+| 대상 | 이유 |
+|------|------|
+| `.claude/rules/` 8종 | 프로젝트 무관한 작업 방식. 코드를 건드리지 않음 |
+| `.claude/decisions/` | 빈 로그를 **지금부터** 누적 시작 |
+| `.claude/workspace/` | 현재 진행 현황을 스냅샷으로 채움 |
+| `docs/superpowers/specs|plans/` 템플릿 | 다음 작업부터 사용 |
+
+**② 덮어쓰지 말고 "병합"할 것** ⚠️
+
+| 대상 | 처리 |
+|------|------|
+| `CLAUDE.md` | 기존 내용 보존 + 템플릿의 `@import`·산출물 흐름만 **추가 병합** (overwrite 금지) |
+| `README.md` | 기존 README 유지. 템플릿 소개용 README는 brownfield엔 불필요 |
+| `.gitignore` | 누락된 줄(`settings.local.json` 등)만 append |
+| `.claude/settings.json` | 이미 있으면 병합 |
+| `_skeleton-README.md` | 이미 README가 있으니 **삭제** |
+
+**③ Brownfield 고유 작업 = 역설계(retroactive), 점진적으로**
+
+greenfield는 "앞으로 만들 것"을 적지만 brownfield는 **이미 만든 것을 거꾸로 문서화**합니다.
+유일한 큰 비용이지만 한 번에 다 할 필요는 없습니다.
+
+- **requirements(REQ/FR)**: 돌고 있는 앱·엔드포인트에서 추출. 처음엔 골격 + 핵심 기능 몇 개만, 이후 작업하며 증분 등록(100% 선행 금지).
+- **architecture**: 현재 코드 구조를 한 번 훑어 `.claude/docs/02-architecture.md`로 스냅샷.
+- **decision-log**: 과거 결정은 복구 불가 → **지금부터** 로깅 시작. 단, 아직 살아있는 **큰** 과거 결정(스택 선택·핵심 의존성 버전 고정 등) 3~5개만 ADR로 선택 백필하면 추적성이 크게 향상.
+
+**④ 권장 도입 순서**
+
+```
+1. rules/decisions/workspace/superpowers 복사  (안전, 코드 무영향)
+2. CLAUDE.md 병합 (기존 보존 + @import·핵심원칙 추가)
+3. 현재 진행 상황을 workspace/todo.md에 스냅샷
+4. 코드 훑어 02-architecture.md 작성 (현재 상태)
+5. requirements 골격 생성 → 핵심 기능부터 점진 채움
+6. 살아있는 과거 큰 결정만 ADR 백필, 이후 DEC 즉시 로깅 시작
+7. _skeleton-README.md 삭제, 기존 README는 유지 (이후 readme-sync 규칙으로 동기화)
+8. 첫 작업부터 brainstorming → spec 게이트 적용
 ```
 
 ---
