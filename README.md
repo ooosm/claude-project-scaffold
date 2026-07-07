@@ -61,7 +61,7 @@
 | ② | HTML 목업 우선(UI 설계 게이트) | 목업 검토·승인 없이 UI 코드 작성 금지 | `.claude/rules/ui-mockups.md` |
 | ③ | 의사결정 자동 로깅 | 선택+기각 대안 보존, append-only | `.claude/rules/decisions.md`, `.claude/decisions/` |
 | ④ | 구현 현황 트래킹 + 자동 갱신 | 단계 완료 시 현황표·todo 자동 갱신 | `.claude/rules/requirements.md`, `.claude/docs/01-impl-requirements.md`, `.claude/workspace/todo.md` |
-| ⑤ | 요구사항 2분할 | 구현 관점(REQ-N-M) / 사용자 관점(FR-NN) | `.claude/docs/01-impl-requirements.md`, `.claude/docs/01-a-user-requirements.md` |
+| ⑤ | 요구사항 2분할 | 구현 관점(REQ-N-M) / 사용자 관점(FR-NN) | `.claude/docs/01-impl-requirements.md`, `.claude/docs/01-user-requirements.md` |
 | ⑥ | 사용자 가이드 — 실제 구현 근거 작성 | 추측 금지, 코드 확인 후 갱신 | `.claude/rules/readme-sync.md`, `.claude/docs/10-user-guide.md` |
 | ⑦ | 버전 관리 + 외부 의존성 호환 버전 명시 | 호환 버전을 근거(DEC)와 함께 고정 | `.claude/rules/conventions.md`, 대상 README Dependencies |
 
@@ -104,7 +104,7 @@ claude-project-scaffold/
 | `decisions/decision-log.md` | 모든 결정 누적 로그(DEC-NNN). 채택 예시 1건 포함. **append-only** |
 | `decisions/ADR-000-template.md` | 큰 아키텍처 결정용 ADR 템플릿(맥락/결정/대안/결과) |
 | `docs/01-impl-requirements.md` | ⑤ 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표(SoT) |
-| `docs/01-a-user-requirements.md` | ⑤ 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
+| `docs/01-user-requirements.md` | ⑤ 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
 | `docs/10-user-guide.md` | ⑥ 사용자 가이드 골격(실제 구현 근거로 작성·갱신) |
 | `workspace/todo.md` | ④ 실시간 현황판(🔄 진행/✅ 완료/⏳ 대기/🚧 블로커) + BACKLOG 표 |
 | `workspace/changelog.md` | 내부 상세 기술 이력(외부 요약은 대상 README의 Changelog) |
