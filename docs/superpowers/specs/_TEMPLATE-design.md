@@ -13,8 +13,8 @@ date: YYYY-MM-DD
 무엇을 왜 만드는가(맥락 포함).
 
 ## 요구사항 연결
-- 구현 관점: REQ-N-M (`.claude/docs/01-requirements.md`)
-- 사용자 관점: FR-NN (`.claude/docs/01-a-func_requirements.md`)
+- 구현 관점: REQ-N-M (`.claude/docs/01-impl-requirements.md`)
+- 사용자 관점: FR-NN (`.claude/docs/01-a-user-requirements.md`)
 
 ## 설계
 - 접근 방식 / 핵심 아이디어

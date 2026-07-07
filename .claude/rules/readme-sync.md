@@ -34,7 +34,7 @@
 태스크/단계 완료 시 아래를 **함께** 갱신한다:
 
 ```
-1. .claude/docs/01-requirements.md  — 구현 현황 요약 표 (✅/⚠️/❌)
+1. .claude/docs/01-impl-requirements.md  — 구현 현황 요약 표 (✅/⚠️/❌)
 2. .claude/workspace/todo.md        — 진행/완료 이동 + 날짜
 3. .claude/workspace/changelog.md   — 상세 이력 추가
 4. README.md                        — Features/Changelog/Config (사용자 영향 시)

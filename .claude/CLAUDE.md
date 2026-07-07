@@ -42,8 +42,8 @@
 
 | 파일 | 내용 |
 |------|------|
-| `01-requirements.md` | 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표 |
-| `01-a-func_requirements.md` | 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
+| `01-impl-requirements.md` | 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표 |
+| `01-a-user-requirements.md` | 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
 | `10-user-guide.md` | 사용자 가이드(실제 구현 근거로 작성·갱신) |
 
 ## 결정 로그 (`.claude/decisions/`)

@@ -27,7 +27,7 @@ date: YYYY-MM-DD
 - 단위/통합 테스트, 수동 확인 항목(→ `.claude/rules/validation.md`).
 
 ## 완료 시 갱신 묶음
-- [ ] `01-requirements.md` 구현 현황 표
+- [ ] `01-impl-requirements.md` 구현 현황 표
 - [ ] `workspace/todo.md`
 - [ ] `workspace/changelog.md`
 - [ ] `README.md` / `10-user-guide.md`

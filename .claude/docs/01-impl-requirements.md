@@ -1,7 +1,7 @@
 # 01 — 요구사항 (구현 관점)
 
 > **구현 관점** 요구사항(REQ-N-M): 무엇을, 어떤 규칙/엔드포인트/데이터구조로.
-> 기술적·검증 가능하게 작성한다. 사용자 관점은 `01-a-func_requirements.md`(FR-NN) 참조.
+> 기술적·검증 가능하게 작성한다. 사용자 관점은 `01-a-user-requirements.md`(FR-NN) 참조.
 > 작성·갱신 규칙: `.claude/rules/requirements.md`.
 
 ## 구현 현황 요약
