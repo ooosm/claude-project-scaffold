@@ -26,6 +26,21 @@
 
 ---
 
+## 전제 조건 (Prerequisites)
+
+- **superpowers 스킬 설치 (권장 전제)** — 이 스캐폴드의 작업 사이클 게이트는
+  superpowers 스킬(`brainstorming`, `writing-plans`, `systematic-debugging`,
+  `test-driven-development` 등)이 에이전트 환경에 설치돼 있다고 **가정**합니다.
+  spec/plan 산출물 경로(`docs/superpowers/`)와 룰(`.claude/rules/*`)이 이 스킬들을 전제로 작성돼 있습니다.
+- **없어도 동작(graceful degrade)** — 스킬이 없으면 자동 호출은 안 되지만,
+  `.claude/rules/`에 절차가 글로 명시돼 있어 에이전트가 **수동으로 동일 게이트**를 따를 수 있습니다.
+  단, 이 경우 스킬이 주는 강제력·일관성은 약해집니다.
+- **frontend-design 스킬 (선택 · UI 작업 한정)** — UI 목업 게이트(②)에서 디자인 품질이
+  중요한 경우 사용을 가정합니다. 없어도 순수 HTML 목업으로 게이트는 동작하며,
+  UI가 없는 프로젝트에는 무관합니다.
+
+---
+
 ## greenfield / brownfield 판별
 
 | 신호 | 판정 |
