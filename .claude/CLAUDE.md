@@ -29,6 +29,7 @@
 @.claude/rules/ui-mockups.md
 @.claude/rules/validation.md
 @.claude/rules/conventions.md
+@.claude/rules/git-workflow.md
 @.claude/rules/readme-sync.md
 @.claude/rules/commands.md
 

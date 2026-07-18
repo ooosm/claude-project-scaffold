@@ -25,7 +25,7 @@
     ├── settings.json                ← 팀 공유 설정 + Stop hook(비차단 check-docs)
     ├── settings.local.json          ← 개인 로컬 설정 (.gitignore)
     ├── commands/                    ← 슬래시 커맨드(/dec, /new-feature) — harness 동사
-    ├── rules/                       ← 방법론 룰 8종 + commands.md(프로젝트 명령어)
+    ├── rules/                       ← 방법론 룰 9종 + commands.md(프로젝트 명령어)
     ├── decisions/                   ← DEC 로그 + ADR (git 포함, 영구)
     ├── docs/                        ← 요구사항(01)·아키텍처(02) (영구)
     └── workspace/                   ← Claude가 관리하는 작업 파일 (git 포함)

@@ -118,10 +118,10 @@ claude-project-scaffold/
 │       ├── specs/   _TEMPLATE-design.md   ← brainstorming 산출물 골격 (+ mockups/)
 │       └── plans/   _TEMPLATE-plan.md     ← writing-plans 산출물 골격
 └── .claude/
-    ├── CLAUDE.md                   ← 200줄 이하 + @import (방법론 룰 8종 + commands)
+    ├── CLAUDE.md                   ← 200줄 이하 + @import (방법론 룰 9종 + commands)
     ├── settings.json               ← 팀 공유 설정 + Stop hook(비차단 check-docs)
     ├── commands/                   ← 슬래시 커맨드 /dec · /new-feature (harness 동사)
-    ├── rules/                      ← 방법론 룰 8종 + commands.md(프로젝트 명령어)
+    ├── rules/                      ← 방법론 룰 9종 + commands.md(프로젝트 명령어)
     ├── decisions/                  ← 결정 로그 + ADR 템플릿 (append-only 누적)
     ├── docs/                       ← 요구사항(2종) + 아키텍처 (영구)
     └── workspace/                  ← 진행 현황판 + 내부 changelog (실시간 갱신)
@@ -140,6 +140,7 @@ claude-project-scaffold/
 | `rules/ui-mockups.md` | ② HTML 목업 우선 게이트(목업 없이 UI 코드 금지) 절차 |
 | `rules/validation.md` | 빌드→단위→통합→타입/린트→수동 검증 순서, "테스트 없으면 미완료" |
 | `rules/conventions.md` | 네이밍·커밋·주석 규칙 + ⑦ 버전 메타데이터·의존성 고정 |
+| `rules/git-workflow.md` | 위험도 기반 브랜치 전략(메인 직접 vs 브랜치+PR), PR=게이트, 브랜치 네이밍 |
 | `rules/readme-sync.md` | ⑥ README/사용자 가이드 자동 동기화, **갱신 묶음 단일 정본**, 릴리즈 절차 |
 | `rules/commands.md` | 프로젝트 명령어(빌드·테스트·check-docs). 방법론 룰이 아닌 프로젝트 고유 정보 |
 | `decisions/decision-log.md` | 모든 결정 누적 로그(DEC-NNN). 스캐폴드 자체 결정 이력이 형식 예시 겸으로 포함 — **적용 시 비우고 시작**. **append-only** |
@@ -212,7 +213,7 @@ claude-project-scaffold/
 
 | 대상 | 이유 |
 |------|------|
-| `.claude/rules/` 방법론 8종 + `commands.md` | 프로젝트 무관한 작업 방식(commands는 골격만 복사 후 실제 명령어로 채움) |
+| `.claude/rules/` 방법론 9종 + `commands.md` | 프로젝트 무관한 작업 방식(commands는 골격만 복사 후 실제 명령어로 채움) |
 | `.claude/decisions/` | 로그를 비우고(스캐폴드 자체 DEC 제거) **지금부터** 누적 시작 |
 | `.claude/workspace/` | 현재 진행 현황을 스냅샷으로 채움 |
 | `.claude/commands/` | 슬래시 커맨드(/dec·/new-feature). 코드 무영향 |
@@ -288,7 +289,7 @@ greenfield는 "앞으로 만들 것"을 적지만 brownfield는 **이미 만든 
 
 ```
 공통
-- [ ] .claude/CLAUDE.md 가 로드되고 방법론 룰 8종 + commands.md 를 @import 하는가
+- [ ] .claude/CLAUDE.md 가 로드되고 방법론 룰 9종 + commands.md 를 @import 하는가
 - [ ] 플레이스홀더([프로젝트명]·[개요]·[스택/호환버전])가 실제 값으로 치환됐는가
       → bash scripts/check-docs.sh 로 기계 확인
 - [ ] .gitignore 에 settings.local.json·node_modules·dist 가 포함됐는가
