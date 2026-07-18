@@ -5,8 +5,9 @@
 ## 기본 원칙
 
 기능이 추가/변경되어 머지될 때마다, **실제 구현된 동작을 근거로**(추측 금지, 코드/엔드포인트
-확인 후) `README.md`와 사용자 가이드(`.claude/docs/10-user-guide.md`)를 갱신한다.
+확인 후) `README.md`와 사용자 가이드(`docs/user-guide.md`)를 갱신한다.
 사용자가 별도 요청하지 않아도 자동으로 수행한다.
+사용자 가이드는 **사람에게 전달되는 납품 문서**이므로 숨김 폴더가 아닌 `docs/`에 둔다.
 
 ## 업데이트 트리거
 
@@ -31,15 +32,32 @@
 
 ## 완료 시 자동 갱신 묶음 (한 번에)
 
+> 이 목록이 갱신 묶음의 **단일 정본**이다. 다른 룰(`planning.md`·`requirements.md`·
+> `validation.md`)과 plan 템플릿은 이 목록을 참조만 하고 재정의하지 않는다.
+
 태스크/단계 완료 시 아래를 **함께** 갱신한다:
 
 ```
-1. .claude/docs/01-impl-requirements.md  — 구현 현황 요약 표 (✅/⚠️/❌)
-2. .claude/workspace/todo.md        — 진행/완료 이동 + 날짜
-3. .claude/workspace/changelog.md   — 상세 이력 추가
-4. README.md                        — Features/Changelog/Config (사용자 영향 시)
-5. .claude/docs/10-user-guide.md    — 실제 동작 근거로 갱신
+1. .claude/docs/01-impl-requirements.md — 구현 현황 요약 표 (✅/⚠️/❌)
+2. .claude/workspace/todo.md            — 진행/완료 이동 + 날짜
+3. .claude/workspace/changelog.md       — 상세 이력 추가
+4. README.md                            — Features/Changelog/Config (사용자 영향 시)
+5. docs/user-guide.md                   — 실제 동작 근거로 갱신
+6. .claude/docs/02-architecture.md      — 구조가 바뀐 경우만
 ```
+
+갱신 후 `scripts/check-docs.sh`로 정합성을 확인한다.
+
+## 릴리즈 절차 (버전 끊기)
+
+납품/배포 시점 또는 사용자 지시가 있을 때 릴리즈를 끊는다:
+
+1. **버전 결정** — SemVer(`MAJOR.MINOR.PATCH`). 호환성 깨짐=MAJOR, 기능 추가=MINOR, 수정=PATCH.
+2. **changelog 마감** — `workspace/changelog.md`의 `[Unreleased]` 항목을
+   `## vX.Y.Z (YYYY-MM-DD)` 섹션으로 이동한다.
+3. **README 반영** — 그중 사용자에게 의미 있는 항목을 README Changelog에 요약 이관.
+4. **태그** — `git tag vX.Y.Z` (버전 결정에 트레이드오프가 있었으면 DEC 기록).
+5. **납품물 확인** — `docs/user-guide.md`·README가 릴리즈 시점 실제 동작과 일치하는지 확인.
 
 ## 주의
 

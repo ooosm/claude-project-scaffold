@@ -27,8 +27,6 @@ date: YYYY-MM-DD
 - 단위/통합 테스트, 수동 확인 항목(→ `.claude/rules/validation.md`).
 
 ## 완료 시 갱신 묶음
-- [ ] `01-impl-requirements.md` 구현 현황 표
-- [ ] `workspace/todo.md`
-- [ ] `workspace/changelog.md`
-- [ ] `README.md` / `10-user-guide.md`
-- [ ] 의존성 변경 시 DEC + Prerequisites
+- [ ] 자동 갱신 묶음 수행(목록 정본: `.claude/rules/readme-sync.md`)
+- [ ] `scripts/check-docs.sh` 통과
+- [ ] 의존성 변경 시 DEC + README Prerequisites

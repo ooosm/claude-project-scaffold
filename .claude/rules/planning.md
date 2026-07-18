@@ -12,7 +12,7 @@
 2. **writing-plans** → `docs/superpowers/plans/YYYY-MM-DD-*.md` 작성, `todo.md`에 태스크 등록.
 3. 구현 중 **결정 발생 시 즉시 DEC 로깅**(→ `decisions.md`).
 4. 구현 → 태스크별 리뷰 → 최종 리뷰.
-5. 완료 시 **자동 갱신 묶음**: 구현현황표 + todo + changelog + README + 사용자 가이드.
+5. 완료 시 **자동 갱신 묶음** 수행(목록의 단일 정본: `readme-sync.md`).
 6. 의존성 변경 시 **호환 버전 + 근거**를 DEC와 README Prerequisites에 기록.
 
 ## 요구사항 파악 (구현 전 확인)

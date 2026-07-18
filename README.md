@@ -62,7 +62,7 @@
 | ③ | 의사결정 자동 로깅 | 선택+기각 대안 보존, append-only | `.claude/rules/decisions.md`, `.claude/decisions/` |
 | ④ | 구현 현황 트래킹 + 자동 갱신 | 단계 완료 시 현황표·todo 자동 갱신 | `.claude/rules/requirements.md`, `.claude/docs/01-impl-requirements.md`, `.claude/workspace/todo.md` |
 | ⑤ | 요구사항 2분할 | 구현 관점(REQ-N-M) / 사용자 관점(FR-NN) | `.claude/docs/01-impl-requirements.md`, `.claude/docs/01-user-requirements.md` |
-| ⑥ | 사용자 가이드 — 실제 구현 근거 작성 | 추측 금지, 코드 확인 후 갱신 | `.claude/rules/readme-sync.md`, `.claude/docs/10-user-guide.md` |
+| ⑥ | 사용자 가이드 — 실제 구현 근거 작성 | 추측 금지, 코드 확인 후 갱신 | `.claude/rules/readme-sync.md`, `docs/user-guide.md` |
 | ⑦ | 버전 관리 + 외부 의존성 호환 버전 명시 | 호환 버전을 근거(DEC)와 함께 고정 | `.claude/rules/conventions.md`, 대상 README Dependencies |
 
 ---
@@ -77,14 +77,19 @@ claude-project-scaffold/
 ├── README.md                       ← (이 파일) 에이전트용 적용 안내. greenfield에선 삭제/교체 대상
 ├── _skeleton-README.md             ← 대상 프로젝트가 README.md로 복사해 채우는 스켈레톤
 ├── .gitignore
-├── docs/superpowers/
-│   ├── specs/   _TEMPLATE-design.md   ← brainstorming 산출물 골격
-│   └── plans/   _TEMPLATE-plan.md     ← writing-plans 산출물 골격
+├── scripts/
+│   └── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR 참조·DEC 번호)
+├── docs/
+│   ├── user-guide.md               ← 사용자 가이드 골격(사람용 납품 문서 — 숨김 폴더 밖)
+│   └── superpowers/
+│       ├── specs/   _TEMPLATE-design.md   ← brainstorming 산출물 골격 (+ mockups/)
+│       └── plans/   _TEMPLATE-plan.md     ← writing-plans 산출물 골격
 └── .claude/
-    ├── CLAUDE.md                   ← 200줄 이하 + @import (룰 8종 + 산출물 흐름도)
-    ├── rules/                      ← 방법론 룰 8종 (읽기 전용 규범)
+    ├── CLAUDE.md                   ← 200줄 이하 + @import (방법론 룰 8종 + commands)
+    ├── settings.json               ← 팀 공유 설정 (check-docs 허용, hook은 opt-in)
+    ├── rules/                      ← 방법론 룰 8종 + commands.md(프로젝트 명령어)
     ├── decisions/                  ← 결정 로그 + ADR 템플릿 (append-only 누적)
-    ├── docs/                       ← 요구사항(2종) + 사용자 가이드 (영구)
+    ├── docs/                       ← 요구사항(2종) + 아키텍처 (영구)
     └── workspace/                  ← 진행 현황판 + 내부 changelog (실시간 갱신)
 ```
 
@@ -93,6 +98,7 @@ claude-project-scaffold/
 | 파일 | 에이전트 관점 역할 |
 |------|--------------------|
 | `CLAUDE.md` | 세션 시작 시 자동 로드. 핵심 요약 + 룰 `@import` + 산출물 흐름도. **200줄 이하** 유지 |
+| `settings.json` | 팀 공유 설정. `check-docs.sh` 실행 허용 포함. Stop hook 연결은 opt-in(→ `rules/commands.md`) |
 | `rules/project-init.md` | ① 디렉토리 구조·역할 구분(누적 vs 작업단위)·brownfield 주의·부트스트랩 |
 | `rules/planning.md` | 워크플로 게이트(brainstorming→plan→구현→갱신), spec/plan 머리말 규칙 |
 | `rules/requirements.md` | ④⑤ 요구사항 2분할(REQ/FR)·구현 현황 요약 표·자동 갱신 규칙 |
@@ -100,23 +106,32 @@ claude-project-scaffold/
 | `rules/ui-mockups.md` | ② HTML 목업 우선 게이트(목업 없이 UI 코드 금지) 절차 |
 | `rules/validation.md` | 빌드→단위→통합→타입/린트→수동 검증 순서, "테스트 없으면 미완료" |
 | `rules/conventions.md` | 네이밍·커밋·주석 규칙 + ⑦ 버전 메타데이터·의존성 고정 |
-| `rules/readme-sync.md` | ⑥ README/사용자 가이드 자동 동기화, 완료 시 갱신 묶음 |
-| `decisions/decision-log.md` | 모든 결정 누적 로그(DEC-NNN). 채택 예시 1건 포함. **append-only** |
+| `rules/readme-sync.md` | ⑥ README/사용자 가이드 자동 동기화, **갱신 묶음 단일 정본**, 릴리즈 절차 |
+| `rules/commands.md` | 프로젝트 명령어(빌드·테스트·check-docs). 방법론 룰이 아닌 프로젝트 고유 정보 |
+| `decisions/decision-log.md` | 모든 결정 누적 로그(DEC-NNN). 스캐폴드 자체 결정 이력이 형식 예시 겸으로 포함 — **적용 시 비우고 시작**. **append-only** |
 | `decisions/ADR-000-template.md` | 큰 아키텍처 결정용 ADR 템플릿(맥락/결정/대안/결과) |
 | `docs/01-impl-requirements.md` | ⑤ 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표(SoT) |
 | `docs/01-user-requirements.md` | ⑤ 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
-| `docs/10-user-guide.md` | ⑥ 사용자 가이드 골격(실제 구현 근거로 작성·갱신) |
+| `docs/02-architecture.md` | 아키텍처 스냅샷. greenfield는 첫 구조 확정 시, brownfield는 도입 시 역설계로 작성 |
 | `workspace/todo.md` | ④ 실시간 현황판(🔄 진행/✅ 완료/⏳ 대기/🚧 블로커) + BACKLOG 표 |
 | `workspace/changelog.md` | 내부 상세 기술 이력(외부 요약은 대상 README의 Changelog) |
 
-### `docs/superpowers/` — 작업 단위 산출물
+### `docs/` — 사람용 납품 문서 + 작업 단위 산출물
 
 | 파일 | 에이전트 관점 역할 |
 |------|--------------------|
-| `specs/_TEMPLATE-design.md` | brainstorming 설계 정본 골격. **복사**해서 `YYYY-MM-DD-*-design.md` 생성 |
-| `plans/_TEMPLATE-plan.md` | writing-plans 작업 분해 골격. **복사**해서 `YYYY-MM-DD-*.md` 생성 |
+| `user-guide.md` | ⑥ 사용자 가이드 골격(사람용 납품 문서). 실제 구현 근거로 작성·갱신 |
+| `superpowers/specs/_TEMPLATE-design.md` | brainstorming 설계 정본 골격. **복사**해서 `YYYY-MM-DD-*-design.md` 생성 |
+| `superpowers/specs/mockups/` | ② UI 목업(.html) 저장 위치 |
+| `superpowers/plans/_TEMPLATE-plan.md` | writing-plans 작업 분해 골격. **복사**해서 `YYYY-MM-DD-*.md` 생성 |
 
 > `_TEMPLATE-*.md`는 **삭제하지 않는다** — 매 작업마다 복사 원본으로 재사용한다.
+
+### `scripts/` — 정합성 검사
+
+| 파일 | 역할 |
+|------|------|
+| `check-docs.sh` | 플레이스홀더 잔존·REQ/FR 댕글링 참조·DEC 번호 검사. `--strict`로 CI/커밋 전 검사 가능 |
 
 ---
 
@@ -130,12 +145,17 @@ claude-project-scaffold/
 1. 이 폴더 전체를 대상 프로젝트 위치로 복사한다.
    - git 새로 시작: rm -rf .git && git init
 2. 플레이스홀더([프로젝트명]·[개요]·[스택/호환버전]·YYYY-MM-DD)를 실제 값으로 치환한다.
-   - 대상: .claude/CLAUDE.md, .claude/docs/*, .claude/workspace/*, _skeleton-README.md
-3. _skeleton-README.md 를 README.md 로 복사해 채운다(이 스캐폴드 소개 README는 덮어쓴다).
-4. .claude/CLAUDE.md 를 루트 CLAUDE.md로 쓸지 결정한다(루트에 있으면 에이전트가 자동 로드).
-5. _TEMPLATE-*.md(spec/plan 템플릿)는 남겨 두고, 실제 작업은 복사해서 만든다.
-6. 불필요한 안내 파일(이 README, _skeleton-README.md 등)을 정리한다.
-7. 첫 작업은 brainstorming → spec 으로 시작한다(코딩 먼저 금지).
+   - 대상: .claude/CLAUDE.md, .claude/docs/*, .claude/workspace/*, .claude/rules/commands.md,
+     docs/user-guide.md, _skeleton-README.md
+3. .claude/decisions/decision-log.md 의 기존 DEC 항목(스캐폴드 자체 결정 이력)을 비우고,
+   대상 프로젝트의 DEC-001부터 새로 시작한다.
+4. _skeleton-README.md 를 README.md 로 복사해 채운다(이 스캐폴드 소개 README는 덮어쓴다).
+5. .claude/CLAUDE.md 를 루트 CLAUDE.md로 쓸지 결정한다(루트에 있으면 에이전트가 자동 로드).
+6. _TEMPLATE-*.md(spec/plan 템플릿)는 남겨 두고, 실제 작업은 복사해서 만든다.
+7. 불필요한 안내 파일(이 README, _skeleton-README.md 등)을 정리한다.
+8. 치환 완료를 `bash scripts/check-docs.sh` 로 확인한다(플레이스홀더 잔존 검사).
+9. 첫 작업은 brainstorming → spec 으로 시작한다(코딩 먼저 금지).
+   첫 구조가 잡히면 .claude/docs/02-architecture.md 를 채운다.
 ```
 
 ### B. brownfield (기존) — 선별 병합
@@ -151,9 +171,10 @@ claude-project-scaffold/
 
 | 대상 | 이유 |
 |------|------|
-| `.claude/rules/` 8종 | 프로젝트 무관한 작업 방식. 코드를 건드리지 않음 |
-| `.claude/decisions/` | 빈 로그를 **지금부터** 누적 시작 |
+| `.claude/rules/` 방법론 8종 + `commands.md` | 프로젝트 무관한 작업 방식(commands는 골격만 복사 후 실제 명령어로 채움) |
+| `.claude/decisions/` | 로그를 비우고(스캐폴드 자체 DEC 제거) **지금부터** 누적 시작 |
 | `.claude/workspace/` | 현재 진행 현황을 스냅샷으로 채움 |
+| `scripts/check-docs.sh` | 문서 정합성 검사. 코드를 건드리지 않음 |
 | `docs/superpowers/specs\|plans/` 템플릿 | 다음 작업부터 사용 |
 
 **② 덮어쓰지 말고 "병합"** ⚠️
@@ -172,13 +193,13 @@ greenfield는 "앞으로 만들 것"을 적지만 brownfield는 **이미 만든 
 유일한 큰 비용이지만 한 번에 다 할 필요는 없다.
 
 - **requirements(REQ/FR)**: 돌고 있는 앱·엔드포인트에서 추출. 처음엔 골격 + 핵심 기능 몇 개만, 이후 작업하며 증분 등록(100% 선행 금지).
-- **architecture**: 현재 코드 구조를 한 번 훑어 `.claude/docs/02-architecture.md`로 스냅샷.
+- **architecture**: 현재 코드 구조를 한 번 훑어 `.claude/docs/02-architecture.md` 골격을 채운다.
 - **decision-log**: 과거 결정은 복구 불가 → **지금부터** 로깅 시작. 아직 살아있는 **큰** 과거 결정(스택 선택·핵심 의존성 버전 고정 등) 3~5개만 ADR로 선택 백필하면 추적성이 크게 향상.
 
 **권장 도입 순서**
 
 ```
-1. rules/decisions/workspace/superpowers 복사  (안전, 코드 무영향)
+1. rules/decisions/workspace/scripts/superpowers 복사  (안전, 코드 무영향)
 2. CLAUDE.md 병합 (기존 보존 + @import·핵심원칙 추가)
 3. 현재 진행 상황을 workspace/todo.md에 스냅샷
 4. 코드 훑어 02-architecture.md 작성 (현재 상태)
@@ -223,9 +244,11 @@ greenfield는 "앞으로 만들 것"을 적지만 brownfield는 **이미 만든 
 
 ```
 공통
-- [ ] .claude/CLAUDE.md 가 로드되고 룰 8종을 @import 하는가
+- [ ] .claude/CLAUDE.md 가 로드되고 방법론 룰 8종 + commands.md 를 @import 하는가
 - [ ] 플레이스홀더([프로젝트명]·[개요]·[스택/호환버전])가 실제 값으로 치환됐는가
+      → bash scripts/check-docs.sh 로 기계 확인
 - [ ] .gitignore 에 settings.local.json·node_modules·dist 가 포함됐는가
+- [ ] decision-log.md 를 비우고 대상 프로젝트의 DEC-001부터 시작하는가
 
 greenfield 추가
 - [ ] _skeleton-README.md 를 README.md 로 교체하고 스캐폴드 소개 README를 정리했는가

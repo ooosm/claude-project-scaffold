@@ -23,6 +23,7 @@
 @.claude/rules/validation.md
 @.claude/rules/conventions.md
 @.claude/rules/readme-sync.md
+@.claude/rules/commands.md
 
 ## 산출물 흐름 (단일 흐름)
 
@@ -38,13 +39,16 @@
 - `.claude/` = **누적·영구**(결정·요구사항·아키텍처), `docs/superpowers/` = **작업 단위 산출물**.
 - spec/plan 머리말에 관련 `BACKLOG-NNN`·`DEC-NNN`·`REQ-NNN`·`FR-NN`을 상호 참조로 명시.
 
-## 설계/요구사항 문서 (`.claude/docs/`)
+## 설계/요구사항 문서
 
 | 파일 | 내용 |
 |------|------|
-| `01-impl-requirements.md` | 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표 |
-| `01-user-requirements.md` | 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
-| `10-user-guide.md` | 사용자 가이드(실제 구현 근거로 작성·갱신) |
+| `.claude/docs/01-impl-requirements.md` | 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표 |
+| `.claude/docs/01-user-requirements.md` | 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
+| `.claude/docs/02-architecture.md` | 아키텍처 스냅샷(구조 변경 시 갱신) |
+| `docs/user-guide.md` | 사용자 가이드(사람용 납품 문서 — 실제 구현 근거로 갱신) |
+
+> 문서 정합성 검사: `bash scripts/check-docs.sh` (명령어 목록: `@.claude/rules/commands.md`)
 
 ## 결정 로그 (`.claude/decisions/`)
 
