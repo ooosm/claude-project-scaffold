@@ -4,8 +4,37 @@
 > 재사용 스캐폴드 레포. 결정 추적 · 요구사항 관리 · 문서 동기화 · UI 목업 게이트가 처음부터
 > 폴더 구조로 들어가 있습니다.
 >
-> **이 README는 사람 독자가 아니라 이 스캐폴드를 적용하는 코딩 에이전트가 읽고 실행하도록
-> 작성되었습니다.** 지시는 명령형이며, 분기·검증 지점을 명시합니다.
+> **이 README는 사람 개발자와 이 스캐폴드를 적용하는 코딩 에이전트 양쪽을 독자로 삼습니다.**
+> 지시는 명령형이며, 분기·검증 지점을 명시합니다.
+
+---
+
+## 이 레포의 정체 — 스캐폴드 + 얕은 harness
+
+이 레포는 **스캐폴드**(복사해서 시작하는 정적 구조물)이면서, 그 위에 **얕은 harness**
+(실제로 실행·강제되는 얇은 자동화 층)를 얹은 하이브리드입니다. 둘의 차이를 구분해야
+어느 부분이 "권고"이고 어느 부분이 "강제"인지 알 수 있습니다.
+
+| 구분 | 정의 | 이 레포에서 | 성격 |
+|------|------|-------------|------|
+| **스캐폴드(대부분)** | 복사해서 읽는 구조·문서·룰. 부트스트랩 한 번에 가치 실현 | `.claude/rules/*`, 요구사항·결정·아키텍처 문서 골격, spec/plan 템플릿 | **권고** — 컨텍스트에 로드되는 프롬프트. 에이전트의 성실성에 의존 |
+| **얕은 harness(척추)** | 런타임에 실제로 실행·검사·차단하는 장치 | `scripts/check-docs.sh`, Stop hook, 슬래시 커맨드(`/dec`·`/new-feature`), CI | **강제** — 저비용·고신뢰 불변식만 기계로 못 박음 |
+
+**설계 철학**: 강제는 *저비용·고신뢰 불변식*(DEC 번호 충돌·플레이스홀더 잔존·댕글링 참조)에만
+걸고, *판단이 필요한 게이트*(목업 승인·brainstorming 우선)는 권고로 둡니다. 하드 차단을 남발하면
+빠르게 움직일 때 거슬리고 이질적 프로젝트에서 취약해지기 때문입니다. 로컬 hook은 **비차단(경고)**,
+원격 CI는 **차단(strict)** — 로컬은 부드럽게, 병합 지점은 엄격하게.
+
+**사람 개발자에게**: 방법론 구조 + 가벼운 자동화를 얻되, 경직된 우리(cage)에 갇히지는 않습니다.
+`scripts/check-docs.sh`로 문서 정합성을 언제든 스스로 점검하고, `/dec`·`/new-feature`로
+반복 작업을 결정론적으로 처리합니다.
+
+**코딩 에이전트에게**: `.claude/rules/*`는 따라야 할 규범이지만 위반해도 도구가 막지는
+않습니다(권고). 반면 check-docs·hook·CI·슬래시 커맨드는 실제로 실행되는 강제 장치입니다 —
+특히 DEC 번호 할당·문서 정합성은 손으로 하지 말고 **harness 동사(슬래시 커맨드)**를 쓰십시오.
+
+> harness의 나머지(강한 PreToolUse 차단, 테스트 출력 파싱→상태 자동화, statusline)는
+> 의도적으로 넣지 않았습니다. 특정 프로젝트에서 실제로 아쉬울 때 그 프로젝트에서만 추가하십시오.
 
 ---
 
@@ -77,8 +106,12 @@ claude-project-scaffold/
 ├── README.md                       ← (이 파일) 에이전트용 적용 안내. greenfield에선 삭제/교체 대상
 ├── _skeleton-README.md             ← 대상 프로젝트가 README.md로 복사해 채우는 스켈레톤
 ├── .gitignore
+├── .github/workflows/
+│   └── check-docs.yml              ← CI: push/PR에서 check-docs --strict (차단 게이트)
 ├── scripts/
-│   └── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR 참조·DEC 번호)
+│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR 참조·DEC 번호)
+│   ├── new-dec.sh                  ← DEC 번호 원자 할당 (/dec 가 호출)
+│   └── new-feature.sh              ← spec/plan 골격 생성 (/new-feature 가 호출)
 ├── docs/
 │   ├── user-guide.md               ← 사용자 가이드 골격(사람용 납품 문서 — 숨김 폴더 밖)
 │   └── superpowers/
@@ -86,7 +119,8 @@ claude-project-scaffold/
 │       └── plans/   _TEMPLATE-plan.md     ← writing-plans 산출물 골격
 └── .claude/
     ├── CLAUDE.md                   ← 200줄 이하 + @import (방법론 룰 8종 + commands)
-    ├── settings.json               ← 팀 공유 설정 (check-docs 허용, hook은 opt-in)
+    ├── settings.json               ← 팀 공유 설정 + Stop hook(비차단 check-docs)
+    ├── commands/                   ← 슬래시 커맨드 /dec · /new-feature (harness 동사)
     ├── rules/                      ← 방법론 룰 8종 + commands.md(프로젝트 명령어)
     ├── decisions/                  ← 결정 로그 + ADR 템플릿 (append-only 누적)
     ├── docs/                       ← 요구사항(2종) + 아키텍처 (영구)
@@ -127,11 +161,18 @@ claude-project-scaffold/
 
 > `_TEMPLATE-*.md`는 **삭제하지 않는다** — 매 작업마다 복사 원본으로 재사용한다.
 
-### `scripts/` — 정합성 검사
+### `scripts/`·`.claude/commands/`·`.github/` — 얕은 harness 척추
 
-| 파일 | 역할 |
-|------|------|
-| `check-docs.sh` | 플레이스홀더 잔존·REQ/FR 댕글링 참조·DEC 번호 검사. `--strict`로 CI/커밋 전 검사 가능 |
+| 파일 | 역할 | 성격 |
+|------|------|------|
+| `scripts/check-docs.sh` | 플레이스홀더 잔존·REQ/FR 댕글링 참조·DEC 번호 검사. 템플릿 자기감지(`_skeleton-README.md`)로 스캐폴드 자신은 플레이스홀더 검사 생략 | 강제(경고/strict) |
+| `scripts/new-dec.sh` | 다음 DEC 번호 **원자 할당** + 골격 append (병렬 세션 충돌 예방) | 강제(결정론) |
+| `scripts/new-feature.sh` | 오늘 날짜로 spec/plan 골격 생성 | 강제(결정론) |
+| `.claude/commands/dec.md` | `/dec <제목>` — new-dec.sh 호출 후 결정 내용 작성 안내 | harness 동사 |
+| `.claude/commands/new-feature.md` | `/new-feature <slug>` — new-feature.sh 호출 후 brainstorming 게이트 안내 | harness 동사 |
+| `.github/workflows/check-docs.yml` | push/PR에서 `check-docs.sh --strict` 실행 — 병합 지점 차단 게이트 | 강제(차단) |
+
+> **로컬은 부드럽게, 병합 지점은 엄격하게**: Stop hook은 비차단(경고), CI는 차단(strict)이다(DEC-006).
 
 ---
 
@@ -174,7 +215,9 @@ claude-project-scaffold/
 | `.claude/rules/` 방법론 8종 + `commands.md` | 프로젝트 무관한 작업 방식(commands는 골격만 복사 후 실제 명령어로 채움) |
 | `.claude/decisions/` | 로그를 비우고(스캐폴드 자체 DEC 제거) **지금부터** 누적 시작 |
 | `.claude/workspace/` | 현재 진행 현황을 스냅샷으로 채움 |
-| `scripts/check-docs.sh` | 문서 정합성 검사. 코드를 건드리지 않음 |
+| `.claude/commands/` | 슬래시 커맨드(/dec·/new-feature). 코드 무영향 |
+| `scripts/` (check-docs·new-dec·new-feature) | 정합성 검사·harness 동사. 코드 무영향 |
+| `.github/workflows/check-docs.yml` | CI 정합성 게이트(기존 워크플로가 있으면 병합) |
 | `docs/superpowers/specs\|plans/` 템플릿 | 다음 작업부터 사용 |
 
 **② 덮어쓰지 말고 "병합"** ⚠️
@@ -213,11 +256,12 @@ greenfield는 "앞으로 만들 것"을 적지만 brownfield는 **이미 만든 
 
 ## 작업 사이클 게이트 (매 작업 동일)
 
-적용 이후 **모든 작업**은 다음 게이트를 순서대로 통과한다.
+적용 이후 **모든 작업**은 다음 게이트를 순서대로 통과한다. 진입점으로 harness 동사를 쓴다.
 
+0. `/new-feature <slug>` → spec/plan 골격이 오늘 날짜로 생성됨(수동: `bash scripts/new-feature.sh <slug>`)
 1. **brainstorming** → `docs/superpowers/specs/YYYY-MM-DD-*-design.md` (UI 포함 시 **목업 게이트** 통과)
 2. **writing-plans** → `docs/superpowers/plans/YYYY-MM-DD-*.md`, `.claude/workspace/todo.md`에 태스크 등록
-3. 결정 발생 시 **즉시 DEC 로깅** (`.claude/decisions/decision-log.md`)
+3. 결정 발생 시 **즉시 DEC 로깅** — `/dec <제목>`(번호 원자 할당, 수동: `bash scripts/new-dec.sh`)
 4. 구현 → 태스크별 리뷰 → 최종 리뷰
 5. 완료 시 **자동 갱신 묶음**: 구현현황표 + todo + changelog + README + 사용자 가이드
 6. 의존성 변경 시 **호환 버전 + 근거**를 DEC와 README Prerequisites에 기록

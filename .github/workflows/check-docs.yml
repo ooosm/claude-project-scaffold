@@ -1,0 +1,18 @@
+name: check-docs
+
+# 문서 정합성을 병합 지점에서 엄격(strict)하게 강제한다.
+# 로컬 Stop hook은 비차단(경고)이고, 차단은 여기 CI가 담당한다.
+# 스캐폴드 템플릿 레포 자신은 check-docs가 _skeleton-README.md 존재를 감지해
+# 플레이스홀더 검사를 생략하므로, 구조 검사(REQ/FR 참조·DEC 번호)만으로 통과한다.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 문서 정합성 검사 (strict)
+        run: bash scripts/check-docs.sh --strict

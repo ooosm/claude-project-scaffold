@@ -13,6 +13,13 @@
 - **언어/스택**: [Node.js 20 LTS + TypeScript 5.x 등 — 호환 검증된 버전 명시]
 - **표준/규약**: [준수할 외부 표준이 있으면 명시]
 
+## 얕은 harness (강제 장치 — 손으로 하지 말 것)
+
+이 레포는 스캐폴드 + 얕은 harness다. 규범(룰)은 권고지만 아래는 실제로 실행·강제된다.
+- `/new-feature <slug>` — 새 작업 사이클 spec/plan 골격 생성
+- `/dec <제목>` — 다음 DEC 번호 **원자 할당** + 골격(손으로 번호 매기지 말 것)
+- `scripts/check-docs.sh` — 문서 정합성(로컬 Stop hook 비차단 / CI strict 차단). 상세: `@.claude/rules/commands.md`
+
 ## 상세 가이드 (방법론 룰 — 모든 세션에서 준수)
 
 @.claude/rules/project-init.md

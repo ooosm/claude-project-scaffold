@@ -9,8 +9,12 @@
 ├── CLAUDE.md                        ← 핵심 요약 + @import만 (200줄 이하)
 ├── README.md                        ← 자동 업데이트 대상(기능 변경 시 반영)
 ├── .gitignore
+├── .github/workflows/
+│   └── check-docs.yml               ← CI: push/PR에서 check-docs --strict (차단)
 ├── scripts/
-│   └── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC 번호)
+│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC 번호)
+│   ├── new-dec.sh                   ← DEC 번호 원자 할당 (/dec)
+│   └── new-feature.sh               ← spec/plan 골격 생성 (/new-feature)
 ├── docs/
 │   ├── user-guide.md                ← 사용자 가이드(사람용 납품 문서 — 숨김 폴더 밖)
 │   └── superpowers/
@@ -18,8 +22,9 @@
 │       └── plans/                   ← writing-plans 산출물(작업 분해)
 └── .claude/
     ├── CLAUDE.md                    ← (선택) 루트 CLAUDE.md와 통합 가능
-    ├── settings.json                ← 팀 공유 설정 (git 포함)
+    ├── settings.json                ← 팀 공유 설정 + Stop hook(비차단 check-docs)
     ├── settings.local.json          ← 개인 로컬 설정 (.gitignore)
+    ├── commands/                    ← 슬래시 커맨드(/dec, /new-feature) — harness 동사
     ├── rules/                       ← 방법론 룰 8종 + commands.md(프로젝트 명령어)
     ├── decisions/                   ← DEC 로그 + ADR (git 포함, 영구)
     ├── docs/                        ← 요구사항(01)·아키텍처(02) (영구)

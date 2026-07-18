@@ -17,19 +17,27 @@ warn() { WARN=$((WARN + 1)); printf '⚠️  %s\n' "$1"; }
 
 # ── 1. 플레이스홀더 잔존 검사 ─────────────────────────────────────────────
 # 템플릿(_TEMPLATE-*, _skeleton-*)과 룰(형식 예시 포함)은 플레이스홀더가 정상이므로 제외.
-REAL_DOCS=""
-for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md \
-         .claude/docs/*.md .claude/workspace/*.md; do
-  [ -f "$f" ] && REAL_DOCS="$REAL_DOCS $f"
-done
+#
+# 템플릿 자기감지: 루트에 _skeleton-README.md 가 있으면 = 스캐폴드 템플릿 레포 자신이다
+# (골격의 플레이스홀더는 정상). 대상 프로젝트는 부트스트랩 때 이 파일을 지우므로,
+# 그때부터 플레이스홀더 검사가 자동으로 켜진다. 구조 검사(2·3)는 두 경우 모두 수행한다.
+if [ -f "_skeleton-README.md" ]; then
+  echo "ℹ️  스캐폴드 템플릿 레포로 감지(_skeleton-README.md 존재) — 플레이스홀더 검사 생략"
+else
+  REAL_DOCS=""
+  for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md \
+           .claude/docs/*.md .claude/workspace/*.md; do
+    [ -f "$f" ] && REAL_DOCS="$REAL_DOCS $f"
+  done
 
-for f in $REAL_DOCS; do
-  hits=$(grep -nE '\[(프로젝트명|개요|스택/호환버전)\]|YYYY-MM-DD' "$f" | head -3)
-  if [ -n "$hits" ]; then
-    warn "플레이스홀더 잔존: $f"
-    printf '%s\n' "$hits" | sed 's/^/      /'
-  fi
-done
+  for f in $REAL_DOCS; do
+    hits=$(grep -nE '\[(프로젝트명|개요|스택/호환버전)\]|YYYY-MM-DD' "$f" | head -3)
+    if [ -n "$hits" ]; then
+      warn "플레이스홀더 잔존: $f"
+      printf '%s\n' "$hits" | sed 's/^/      /'
+    fi
+  done
+fi
 
 # ── 2. REQ ↔ FR 상호 참조 검사 ────────────────────────────────────────────
 IMPL=".claude/docs/01-impl-requirements.md"

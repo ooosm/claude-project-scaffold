@@ -2,7 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(bash scripts/check-docs.sh:*)",
-      "Bash(scripts/check-docs.sh:*)"
+      "Bash(scripts/check-docs.sh:*)",
+      "Bash(bash scripts/new-dec.sh:*)",
+      "Bash(bash scripts/new-feature.sh:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f scripts/check-docs.sh ] && bash scripts/check-docs.sh || true"
+          }
+        ]
+      }
     ]
   }
 }
