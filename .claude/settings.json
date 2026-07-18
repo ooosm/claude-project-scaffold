@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/check-docs.sh:*)",
+      "Bash(scripts/check-docs.sh:*)"
+    ]
+  }
+}
