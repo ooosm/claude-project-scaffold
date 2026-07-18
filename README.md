@@ -114,6 +114,7 @@ claude-project-scaffold/
 │   └── new-feature.sh              ← spec/plan 골격 생성 (/new-feature 가 호출)
 ├── docs/
 │   ├── user-guide.md               ← 사용자 가이드 골격(사람용 납품 문서 — 숨김 폴더 밖)
+│   ├── how-it-works.md             ← 동작 원리 골격(트리거별 흐름, Mermaid — 사람용 납품 문서)
 │   └── superpowers/
 │       ├── specs/   _TEMPLATE-design.md   ← brainstorming 산출물 골격 (+ mockups/)
 │       └── plans/   _TEMPLATE-plan.md     ← writing-plans 산출물 골격
@@ -156,6 +157,7 @@ claude-project-scaffold/
 | 파일 | 에이전트 관점 역할 |
 |------|--------------------|
 | `user-guide.md` | ⑥ 사용자 가이드 골격(사람용 납품 문서). 실제 구현 근거로 작성·갱신 |
+| `how-it-works.md` | 동작 원리 골격(사람용 납품 문서). 큰 기능·트리거별 컴포넌트 흐름(Mermaid). **동적 흐름** — architecture(정적 구조)와 상보 |
 | `superpowers/specs/_TEMPLATE-design.md` | brainstorming 설계 정본 골격. **복사**해서 `YYYY-MM-DD-*-design.md` 생성 |
 | `superpowers/specs/mockups/` | ② UI 목업(.html) 저장 위치 |
 | `superpowers/plans/_TEMPLATE-plan.md` | writing-plans 작업 분해 골격. **복사**해서 `YYYY-MM-DD-*.md` 생성 |

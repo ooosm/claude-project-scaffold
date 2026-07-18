@@ -17,6 +17,7 @@
 │   └── new-feature.sh               ← spec/plan 골격 생성 (/new-feature)
 ├── docs/
 │   ├── user-guide.md                ← 사용자 가이드(사람용 납품 문서 — 숨김 폴더 밖)
+│   ├── how-it-works.md              ← 동작 원리(트리거별 흐름, Mermaid — 사람용 납품 문서)
 │   └── superpowers/
 │       ├── specs/                   ← brainstorming 산출물(설계 정본) + mockups/
 │       └── plans/                   ← writing-plans 산출물(작업 분해)
@@ -36,7 +37,9 @@
 ## 문서 번호 규약 (`.claude/docs/`)
 
 - `01-*` 요구사항(impl/user 2분할) / `02-*` 아키텍처 / `03~09` 예약(운영·보안 등 필요 시).
-- **사람에게 전달되는 납품 문서**(사용자 가이드 등)는 `.claude/` 가 아닌 `docs/` 에 둔다.
+- **사람에게 전달되는 납품 문서**(사용자 가이드·동작 원리 등)는 `.claude/` 가 아닌 `docs/` 에 둔다.
+- **정적 구조 vs 동적 흐름**: `.claude/docs/02-architecture.md`(무엇이 있나)와
+  `docs/how-it-works.md`(트리거별로 어떻게 동작하나)는 상보적이며 서로 링크한다.
 
 ## 역할 구분
 

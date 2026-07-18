@@ -25,7 +25,7 @@ if [ -f "_skeleton-README.md" ]; then
   echo "ℹ️  스캐폴드 템플릿 레포로 감지(_skeleton-README.md 존재) — 플레이스홀더 검사 생략"
 else
   REAL_DOCS=""
-  for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md \
+  for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md docs/how-it-works.md \
            .claude/docs/*.md .claude/workspace/*.md; do
     [ -f "$f" ] && REAL_DOCS="$REAL_DOCS $f"
   done

@@ -20,8 +20,10 @@
 | 환경 변수 추가/삭제 | Configuration |
 | 의존성 변경 | Prerequisites / Dependencies (+ DEC 근거) |
 | 사용자 영향 있는 버그 수정 | Changelog |
+| **큰 기능의 동작 흐름 추가/변경** | **`docs/how-it-works.md`** (트리거→컴포넌트 흐름) |
 
 > 내부 리팩토링·테스트 추가·코드 스타일 변경은 README를 수정하지 않는다.
+> how-it-works는 **큰 기능 단위 흐름**에만 반응한다(단일 컴포넌트·소규모 변경은 대상 아님).
 
 ## 2단 이력 관리
 
@@ -43,8 +45,12 @@
 3. .claude/workspace/changelog.md       — 상세 이력 추가
 4. README.md                            — Features/Changelog/Config (사용자 영향 시)
 5. docs/user-guide.md                   — 실제 동작 근거로 갱신
-6. .claude/docs/02-architecture.md      — 구조가 바뀐 경우만
+6. .claude/docs/02-architecture.md      — 구조(정적)가 바뀐 경우만
+7. docs/how-it-works.md                 — 큰 기능의 동작 흐름(동적)이 바뀐 경우만
 ```
+
+> 6·7은 조건부다. architecture는 **정적 구조**(무엇이 있나), how-it-works는 **동적 흐름**
+> (트리거별로 어떻게 동작하나) — 서로 상보적이며 상호 링크한다.
 
 갱신 후 `scripts/check-docs.sh`로 정합성을 확인한다.
 
@@ -57,7 +63,8 @@
    `## vX.Y.Z (YYYY-MM-DD)` 섹션으로 이동한다.
 3. **README 반영** — 그중 사용자에게 의미 있는 항목을 README Changelog에 요약 이관.
 4. **태그** — `git tag vX.Y.Z` (버전 결정에 트레이드오프가 있었으면 DEC 기록).
-5. **납품물 확인** — `docs/user-guide.md`·README가 릴리즈 시점 실제 동작과 일치하는지 확인.
+5. **납품물 확인** — `docs/user-guide.md`·`docs/how-it-works.md`·README가 릴리즈 시점 실제
+   동작과 일치하는지 확인(how-it-works는 납품 주고받는 쪽의 동작 이해 문서이므로 특히 중요).
 
 ## 주의
 
