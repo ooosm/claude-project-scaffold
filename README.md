@@ -111,6 +111,7 @@ claude-project-scaffold/
 ├── scripts/
 │   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR 참조·DEC 번호)
 │   ├── test-check-docs.sh          ← check-docs 검출 로직 회귀 테스트(CI 실행)
+│   ├── test-new-dec.sh             ← new-dec 번호 할당·말미 정규화 회귀 테스트(CI 실행)
 │   ├── new-dec.sh                  ← DEC 번호 원자 할당 (/dec 가 호출)
 │   └── new-feature.sh              ← spec/plan 골격 생성 (/new-feature 가 호출)
 ├── docs/
@@ -169,9 +170,10 @@ claude-project-scaffold/
 
 | 파일 | 역할 | 성격 |
 |------|------|------|
-| `scripts/check-docs.sh` | 플레이스홀더 잔존(비-ASCII 대괄호·VAR_NAME·날짜·ID 리터럴, Mermaid 펜스 제외)·REQ/FR 댕글링 참조·DEC 번호 검사. 템플릿 자기감지(`_skeleton-README.md`)로 스캐폴드 자신은 플레이스홀더 검사 생략 | 강제(경고/strict) |
-| `scripts/test-check-docs.sh` | check-docs 검출 로직 회귀 테스트(정탐·오탐·Mermaid 제외·strict 종료코드). CI에서 실행 | 강제(테스트) |
-| `scripts/new-dec.sh` | 다음 DEC 번호 **원자 할당** + 골격 append (병렬 세션 충돌 예방) | 강제(결정론) |
+| `scripts/check-docs.sh` | 플레이스홀더 잔존(비-ASCII 대괄호·VAR_NAME·날짜·ID 리터럴 — 코드펜스 전체 제외, ID 리터럴은 인라인 코드도 제외)·REQ/FR 댕글링 참조·DEC 번호·DEC 댕글링 참조 검사. 템플릿 자기감지(`_skeleton-README.md`)로 스캐폴드 자신은 플레이스홀더 검사 생략 | 강제(경고/strict) |
+| `scripts/test-check-docs.sh` | check-docs 검출 로직 회귀 테스트(정탐·오탐·펜스/백틱 제외·DEC 댕글링·복사 직후 상태·strict 종료코드). CI에서 실행 | 강제(테스트) |
+| `scripts/test-new-dec.sh` | new-dec 회귀 테스트(번호 할당·말미 정규화·접합 방지). CI에서 실행 | 강제(테스트) |
+| `scripts/new-dec.sh` | 다음 DEC 번호 **원자 할당** + 골격 append (병렬 세션 충돌 예방). append 전 말미를 정규화해 로그를 비운 상태에서도 접합되지 않음 | 강제(결정론) |
 | `scripts/new-feature.sh` | 오늘 날짜로 spec/plan 골격 생성 | 강제(결정론) |
 | `.claude/commands/dec.md` | `/dec <제목>` — new-dec.sh 호출 후 결정 내용 작성 안내 | harness 동사 |
 | `.claude/commands/new-feature.md` | `/new-feature <slug>` — new-feature.sh 호출 후 brainstorming 게이트 안내 | harness 동사 |

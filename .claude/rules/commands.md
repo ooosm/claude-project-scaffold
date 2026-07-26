@@ -27,6 +27,7 @@
 bash scripts/check-docs.sh          # 플레이스홀더 잔존·REQ/FR 참조·DEC 번호 검사 (경고만, exit 0)
 bash scripts/check-docs.sh --strict # 경고를 실패(exit 1)로 — CI/커밋 전 검사용
 bash scripts/test-check-docs.sh     # check-docs 검출 로직 회귀 테스트 (CI에서 실행)
+bash scripts/test-new-dec.sh        # new-dec 번호 할당·말미 정규화 회귀 테스트 (CI에서 실행)
 bash scripts/new-dec.sh "제목"      # DEC 번호 원자 할당 (보통 /dec 로 호출)
 bash scripts/new-feature.sh slug    # spec/plan 골격 생성 (보통 /new-feature 로 호출)
 ```
@@ -36,6 +37,7 @@ bash scripts/new-feature.sh slug    # spec/plan 골격 생성 (보통 /new-featu
 - **로컬 Stop hook**: `.claude/settings.json`이 세션 종료 시 `check-docs.sh`를 **비차단**으로
   실행한다(경고만, 세션을 막지 않음). 스크립트가 없으면 무해하게 통과한다.
 - **CI**: `.github/workflows/check-docs.yml`가 push/PR에서 `check-docs.sh --strict`로 **차단**한다.
-- 설계 근거: 로컬은 부드럽게, 병합 지점은 엄격하게(DEC-006).
+- 설계 근거: 로컬은 부드럽게, 병합 지점은 엄격하게 — 작업 중에는 경고로 흐름을 끊지 않고,
+  되돌리기 비싼 병합 지점에서만 차단한다.
 
 > 각 단계/태스크 완료 시(자동 갱신 묶음 직후) `check-docs.sh` 실행을 권장한다.

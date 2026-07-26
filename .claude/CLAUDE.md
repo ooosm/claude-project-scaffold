@@ -51,8 +51,8 @@
 
 | 파일 | 내용 |
 |------|------|
-| `.claude/docs/01-impl-requirements.md` | 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표 |
-| `.claude/docs/01-user-requirements.md` | 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
+| `.claude/docs/01-impl-requirements.md` | 구현 관점 요구사항(`REQ-N-M`) + 구현 현황 요약 표 |
+| `.claude/docs/01-user-requirements.md` | 사용자 관점 기능 요구사항(`FR-NN`, 체크박스) |
 | `.claude/docs/02-architecture.md` | 아키텍처 스냅샷 — **정적 구조**(구조 변경 시 갱신) |
 | `docs/user-guide.md` | 사용자 가이드(사람용 납품 문서 — 실제 구현 근거로 갱신) |
 | `docs/how-it-works.md` | 동작 원리(사람용 납품 문서) — **동적 흐름**, 트리거별 컴포넌트 상호작용(Mermaid) |
@@ -63,7 +63,7 @@
 
 | 파일 | 내용 |
 |------|------|
-| `decision-log.md` | **모든 설계·구현 결정 누적 로그**(DEC-NNN, append-only) |
+| `decision-log.md` | **모든 설계·구현 결정 누적 로그**(`DEC-NNN`, append-only) |
 | `ADR-000-template.md` | 큰 아키텍처 결정용 ADR 템플릿 |
 
 > ⚠️ 대안 중 하나를 선택하는 결정을 내릴 때마다 **즉시** `decision-log.md`에 `## DEC-NNN`을 추가한다. 상세 규칙은 `@.claude/rules/decisions.md`.

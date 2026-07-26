@@ -16,5 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: check-docs 회귀 테스트 (검출 로직)
         run: bash scripts/test-check-docs.sh
+      - name: new-dec 회귀 테스트 (번호 할당·말미 정규화)
+        run: bash scripts/test-new-dec.sh
       - name: 문서 정합성 검사 (strict)
         run: bash scripts/check-docs.sh --strict

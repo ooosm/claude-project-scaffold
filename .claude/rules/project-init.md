@@ -14,6 +14,7 @@
 ├── scripts/
 │   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC 번호)
 │   ├── test-check-docs.sh           ← check-docs 검출 로직 회귀 테스트 (CI)
+│   ├── test-new-dec.sh              ← new-dec 번호 할당·말미 정규화 회귀 테스트 (CI)
 │   ├── new-dec.sh                   ← DEC 번호 원자 할당 (/dec)
 │   └── new-feature.sh               ← spec/plan 골격 생성 (/new-feature)
 ├── docs/
