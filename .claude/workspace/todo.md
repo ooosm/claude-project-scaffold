@@ -1,5 +1,5 @@
 # TODO — claude-project-scaffold (이 레포 자신의 현황판)
-_최종 업데이트: 2026-07-19_
+_최종 업데이트: 2026-07-27_
 
 > 실시간 단일 현황판. 작업 시작/완료/블로커 발생 시 즉시 갱신한다.
 > 큰 작업 묶음은 `BACKLOG-NNN`으로 식별하고 spec/plan과 상호 참조한다.
@@ -8,7 +8,7 @@ _최종 업데이트: 2026-07-19_
 > 전부 비우고 대상 프로젝트 현황으로 새로 시작한다(→ README 적용 절차).
 
 ## 🔄 진행 중
-- (없음)
+- [ ] 버전·changelog 정합성 harness (BACKLOG-002) — 시작: 2026-07-27
 
 ## ✅ 완료
 - [x] 얕은 harness 척추(hook·슬래시 커맨드·CI) — 완료: 2026-07-18
@@ -27,3 +27,4 @@ _최종 업데이트: 2026-07-19_
 | ID | 제목 | 상태 | spec/plan |
 |----|------|------|-----------|
 | BACKLOG-001 | 글로벌 룰 버전 관리(`~/.claude` git 추적) | ⏳ 대기 | (미착수) |
+| BACKLOG-002 | 버전·changelog 정합성 harness(lib-version·check-docs §4·§5·`/release`) | 🔄 진행 | `2026-07-27-version-release-harness-design.md` |
