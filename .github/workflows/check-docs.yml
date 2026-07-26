@@ -14,5 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: check-docs 회귀 테스트 (검출 로직)
+        run: bash scripts/test-check-docs.sh
       - name: 문서 정합성 검사 (strict)
         run: bash scripts/check-docs.sh --strict

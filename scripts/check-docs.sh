@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 문서 정합성 검사 — 방법론 문서의 기계적 오류를 잡는다 (규칙 준수의 최소 강제 수단).
-#   1) 플레이스홀더 잔존   : 실문서에 [프로젝트명]·YYYY-MM-DD 등이 남아 있는지
+#   1) 플레이스홀더 잔존   : 실문서에 [한글 플레이스홀더]·VAR_NAME·YYYY-MM-DD·ID 리터럴이 남아 있는지
 #   2) REQ/FR 상호 참조     : 요구사항 2분할 문서 간 댕글링 참조
 #   3) DEC 번호             : decision-log.md 번호 중복·비단조 증가
 # 기본은 경고만(exit 0). --strict 는 경고 발생 시 exit 1 (CI/커밋 전 검사용).
@@ -14,6 +14,25 @@ cd "$ROOT" || exit 1
 WARN=0
 
 warn() { WARN=$((WARN + 1)); printf '⚠️  %s\n' "$1"; }
+
+# 플레이스홀더 검출(행번호 보존).
+#   - ```mermaid 펜스는 노드 라벨이 비-ASCII 대괄호(`[집계 엔진]`)라 플레이스홀더와 구분 불가 →
+#     빈 줄로 치환해 검사에서 제외(다른 코드펜스의 `[설치 명령]` 같은 플레이스홀더는 남겨 검출).
+#   - 검출: (1) 비-ASCII 문자를 포함한 대괄호 (2) VAR_NAME (3) YYYY-MM-DD/HH:MM (4) ID 리터럴(-NNN/-NN/-N-M).
+#   - 제외: 마크다운 링크/이미지(`](`)·각주(`[^`).
+#   원하는 스켈레톤 플레이스홀더는 전부 한글(비-ASCII)을 포함하므로, 체크박스([ ]/[x])·
+#   [Unreleased]·코드 인덱싱(arr[idx]) 등 ASCII 정상 표기는 자연히 제외된다.
+#   `[^ -~]`(0x20~0x7E 밖=비-ASCII 바이트) + LC_ALL=C 로 로케일 독립(비-UTF-8 CI에서도 동일 동작).
+scan_placeholders() {
+  awk '
+    /^[[:space:]]*```mermaid/ {inm=1; print ""; next}
+    inm && /^[[:space:]]*```/  {inm=0; print ""; next}
+    inm {print ""; next}
+    {print}
+  ' "$1" \
+  | LC_ALL=C grep -nE '\[[^]]*[^ -~][^]]*\]|VAR_NAME|YYYY-MM-DD|HH:MM|[A-Z]{2,}-(NNN|NN|N-M)' \
+  | LC_ALL=C grep -vE '\]\(|\[\^'
+}
 
 # ── 1. 플레이스홀더 잔존 검사 ─────────────────────────────────────────────
 # 템플릿(_TEMPLATE-*, _skeleton-*)과 룰(형식 예시 포함)은 플레이스홀더가 정상이므로 제외.
@@ -31,10 +50,12 @@ else
   done
 
   for f in $REAL_DOCS; do
-    hits=$(grep -nE '\[(프로젝트명|개요|스택/호환버전)\]|YYYY-MM-DD' "$f" | head -3)
-    if [ -n "$hits" ]; then
-      warn "플레이스홀더 잔존: $f"
-      printf '%s\n' "$hits" | sed 's/^/      /'
+    all=$(scan_placeholders "$f")
+    if [ -n "$all" ]; then
+      n=$(printf '%s\n' "$all" | wc -l | tr -d ' ')
+      warn "플레이스홀더 잔존: $f (${n}건)"
+      printf '%s\n' "$all" | head -5 | sed 's/^/      /'
+      [ "$n" -gt 5 ] && echo "      … 외 $((n - 5))건"
     fi
   done
 fi

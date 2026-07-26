@@ -26,6 +26,7 @@
 ```bash
 bash scripts/check-docs.sh          # 플레이스홀더 잔존·REQ/FR 참조·DEC 번호 검사 (경고만, exit 0)
 bash scripts/check-docs.sh --strict # 경고를 실패(exit 1)로 — CI/커밋 전 검사용
+bash scripts/test-check-docs.sh     # check-docs 검출 로직 회귀 테스트 (CI에서 실행)
 bash scripts/new-dec.sh "제목"      # DEC 번호 원자 할당 (보통 /dec 로 호출)
 bash scripts/new-feature.sh slug    # spec/plan 골격 생성 (보통 /new-feature 로 호출)
 ```

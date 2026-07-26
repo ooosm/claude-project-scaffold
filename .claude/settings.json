@@ -3,6 +3,7 @@
     "allow": [
       "Bash(bash scripts/check-docs.sh:*)",
       "Bash(scripts/check-docs.sh:*)",
+      "Bash(bash scripts/test-check-docs.sh:*)",
       "Bash(bash scripts/new-dec.sh:*)",
       "Bash(bash scripts/new-feature.sh:*)"
     ]
