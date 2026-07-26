@@ -3,6 +3,9 @@
 #   1) 플레이스홀더 잔존   : 실문서에 [한글 플레이스홀더]·VAR_NAME·YYYY-MM-DD·ID 리터럴이 남아 있는지
 #   2) REQ/FR 상호 참조     : 요구사항 2분할 문서 간 댕글링 참조
 #   3) DEC 번호             : decision-log.md 번호 중복·비단조 증가
+#   4) DEC 댕글링 참조      : 룰·문서가 참조한 DEC 번호가 로그에 정의돼 있는지
+#   5) changelog 스테일     : changelog 갱신 없이 feat/fix 커밋이 쌓였는지
+#   6) 버전 3자 일치        : 버전 SoT ↔ changelog 최신 릴리즈 ↔ git tag
 # 기본은 경고만(exit 0). --strict 는 경고 발생 시 exit 1 (CI/커밋 전 검사용).
 set -u
 
@@ -12,6 +15,10 @@ STRICT=0
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 1
 WARN=0
+
+# 버전·changelog 조회 함수(§5·§6). 없어도 나머지 검사는 그대로 동작하도록 방어한다.
+# shellcheck source=lib-version.sh
+[ -f "$ROOT/scripts/lib-version.sh" ] && . "$ROOT/scripts/lib-version.sh"
 
 warn() { WARN=$((WARN + 1)); printf '⚠️  %s\n' "$1"; }
 
@@ -113,6 +120,44 @@ if [ -f "$DECLOG" ]; then
         || warn "댕글링 참조: $f 가 참조한 ${dec} 이 $DECLOG 에 정의돼 있지 않음"
     done
   done
+fi
+
+# ── 5. changelog 스테일 검사 ─────────────────────────────────────────────
+# changelog 를 마지막으로 수정한 커밋 이후 feat/fix 가 3건 이상 쌓였으면 경고.
+# 유예를 두는 이유: 작업 중 연속 커밋마다 경고가 뜨면 피로도가 높아 결국 전부 무시하게 된다.
+# [Unreleased] 가 비었는지는 신호로 쓰지 않는다 — 릴리즈 직후엔 정상적으로 비어 있어
+# 매 릴리즈마다 오탐이 난다. 신호는 "파일이 커밋에서 수정됐는가" 하나다.
+STALE_THRESHOLD=3
+if command -v commits_since_changelog >/dev/null 2>&1 && [ -f "$CHANGELOG_PATH" ]; then
+  n=$(commits_since_changelog)
+  if [ "${n:-0}" -ge "$STALE_THRESHOLD" ]; then
+    warn "changelog 스테일: 마지막 갱신 이후 feat/fix 커밋 ${n}건 — $CHANGELOG_PATH 에 반영하세요"
+  fi
+fi
+
+# ── 6. 버전 3자 일치 검사 ────────────────────────────────────────────────
+# SoT ↔ changelog 최신 릴리즈 ↔ git tag. 정책이 none 이거나 SoT 가 없으면 검사 자체를 건너뛴다.
+# **태그 미달성은 경고가 아니라 안내**다 — /release 는 파일만 고치고 태그는 사람이 달므로,
+# 그 사이 구간을 경고로 만들면 릴리즈마다 빨간불이 뜨고 PR 브랜치(태그 없음)에서 CI 가 상시
+# 실패한다. 반대로 태그가 SoT 보다 앞선 역전은 명백한 오류라 경고한다.
+if command -v detect_version_sot >/dev/null 2>&1; then
+  POLICY=$(read_version_policy)
+  SOT_F=$(sot_file); SOT_V=$(sot_version)
+  if [ "$POLICY" != "none" ] && [ -n "$SOT_V" ]; then
+    if [ "$POLICY" = "semver" ] && ! is_semver "$SOT_V"; then
+      warn "버전 형식 위반: $SOT_F 의 '$SOT_V' 가 semver(X.Y.Z)가 아님 (정책: $POLICY)"
+    fi
+    CL_V=$(changelog_latest_release)
+    if [ -n "$CL_V" ] && [ "$CL_V" != "$SOT_V" ]; then
+      warn "버전 불일치: $SOT_F 는 '$SOT_V' 인데 $CHANGELOG_PATH 최신 릴리즈는 '$CL_V' — /release 로 함께 갱신하세요"
+    fi
+    TAG_V=$(latest_git_tag)
+    if [ -n "$TAG_V" ] && version_gt "$TAG_V" "$SOT_V"; then
+      warn "버전 역전: git tag 'v$TAG_V' 가 $SOT_F 의 '$SOT_V' 보다 앞섬"
+    elif [ "$CL_V" = "$SOT_V" ] && [ "$TAG_V" != "$SOT_V" ] && git_history_usable; then
+      echo "ℹ️  v$SOT_V 태그가 아직 없습니다 — 릴리즈를 확정하려면: git tag v$SOT_V"
+    fi
+  fi
 fi
 
 # ── 결과 ─────────────────────────────────────────────────────────────────

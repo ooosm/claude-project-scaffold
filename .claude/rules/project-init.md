@@ -11,8 +11,11 @@
 ├── .gitignore
 ├── .github/workflows/
 │   └── check-docs.yml               ← CI: push/PR에서 check-docs --strict (차단)
+├── VERSION                          ← 버전 SoT(언어 매니페스트가 없을 때만 — 있으면 그쪽이 정본)
 ├── scripts/
-│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC 번호)
+│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC·changelog·버전)
+│   ├── lib-version.sh               ← 버전·changelog 조회 함수(check-docs·new-release 공유)
+│   ├── new-release.sh               ← 릴리즈 끊기 (/release)
 │   ├── test-check-docs.sh           ← check-docs 검출 로직 회귀 테스트 (CI)
 │   ├── test-new-dec.sh              ← new-dec 번호 할당·말미 정규화 회귀 테스트 (CI)
 │   ├── new-dec.sh                   ← DEC 번호 원자 할당 (/dec)
@@ -27,7 +30,7 @@
     ├── CLAUDE.md                    ← (선택) 루트 CLAUDE.md와 통합 가능
     ├── settings.json                ← 팀 공유 설정 + Stop hook(비차단 check-docs)
     ├── settings.local.json          ← 개인 로컬 설정 (.gitignore)
-    ├── commands/                    ← 슬래시 커맨드(/dec, /new-feature) — harness 동사
+    ├── commands/                    ← 슬래시 커맨드(/dec, /new-feature, /release) — harness 동사
     ├── rules/                       ← 방법론 룰 9종 + commands.md(프로젝트 명령어)
     ├── decisions/                   ← DEC 로그 + ADR (git 포함, 영구)
     ├── docs/                        ← 요구사항(01)·아키텍처(02) (영구)

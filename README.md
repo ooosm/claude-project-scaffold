@@ -1,5 +1,8 @@
 # claude-project-scaffold
 
+**v0.1.0** — 버전은 루트 `VERSION` 파일이 정본이며 `/release`로 끊습니다. 대상 프로젝트는
+"scaffold vX.Y.Z 기준으로 적용"을 DEC에 남겨 두면 이후 상류 갱신분을 가려낼 수 있습니다.
+
 > 코딩 에이전트(Claude Code 등)가 신규/기존 프로젝트에 **일관된 개발 방법론**을 부트스트랩하기 위한
 > 재사용 스캐폴드 레포. 결정 추적 · 요구사항 관리 · 문서 동기화 · UI 목업 게이트가 처음부터
 > 폴더 구조로 들어가 있습니다.
@@ -18,7 +21,7 @@
 | 구분 | 정의 | 이 레포에서 | 성격 |
 |------|------|-------------|------|
 | **스캐폴드(대부분)** | 복사해서 읽는 구조·문서·룰. 부트스트랩 한 번에 가치 실현 | `.claude/rules/*`, 요구사항·결정·아키텍처 문서 골격, spec/plan 템플릿 | **권고** — 컨텍스트에 로드되는 프롬프트. 에이전트의 성실성에 의존 |
-| **얕은 harness(척추)** | 런타임에 실제로 실행·검사·차단하는 장치 | `scripts/check-docs.sh`, Stop hook, 슬래시 커맨드(`/dec`·`/new-feature`), CI | **강제** — 저비용·고신뢰 불변식만 기계로 못 박음 |
+| **얕은 harness(척추)** | 런타임에 실제로 실행·검사·차단하는 장치 | `scripts/check-docs.sh`, Stop hook, 슬래시 커맨드(`/dec`·`/new-feature`·`/release`), CI | **강제** — 저비용·고신뢰 불변식만 기계로 못 박음 |
 
 **설계 철학**: 강제는 *저비용·고신뢰 불변식*(DEC 번호 충돌·플레이스홀더 잔존·댕글링 참조)에만
 걸고, *판단이 필요한 게이트*(목업 승인·brainstorming 우선)는 권고로 둡니다. 하드 차단을 남발하면
@@ -110,7 +113,7 @@
 | ④ | 구현 현황 트래킹 + 자동 갱신 | 단계 완료 시 현황표·todo 자동 갱신 | `.claude/rules/requirements.md`, `.claude/docs/01-impl-requirements.md`, `.claude/workspace/todo.md` |
 | ⑤ | 요구사항 2분할 | 구현 관점(REQ-N-M) / 사용자 관점(FR-NN) | `.claude/docs/01-impl-requirements.md`, `.claude/docs/01-user-requirements.md` |
 | ⑥ | 사용자 가이드 — 실제 구현 근거 작성 | 추측 금지, 코드 확인 후 갱신 | `.claude/rules/readme-sync.md`, `docs/user-guide.md` |
-| ⑦ | 버전 관리 + 외부 의존성 호환 버전 명시 | 호환 버전을 근거(DEC)와 함께 고정 | `.claude/rules/conventions.md`, 대상 README Dependencies |
+| ⑦ | 버전 관리 + 외부 의존성 호환 버전 명시 | 릴리즈는 `/release`로 끊고(버전 SoT·changelog·README 동시 갱신), 의존성은 호환 버전을 근거(DEC)와 함께 고정 | `.claude/rules/readme-sync.md` §릴리즈 절차, `.claude/rules/commands.md` §버전 정책, `.claude/rules/conventions.md` |
 
 ---
 
@@ -127,7 +130,9 @@ claude-project-scaffold/
 ├── .github/workflows/
 │   └── check-docs.yml              ← CI: push/PR에서 check-docs --strict (차단 게이트)
 ├── scripts/
-│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR 참조·DEC 번호)
+│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR·DEC·changelog·버전)
+│   ├── lib-version.sh              ← 버전·changelog 조회 함수(check-docs·new-release 공유)
+│   ├── new-release.sh              ← 릴리즈 끊기 (/release 가 호출)
 │   ├── test-check-docs.sh          ← check-docs 검출 로직 회귀 테스트(CI 실행)
 │   ├── test-new-dec.sh             ← new-dec 번호 할당·말미 정규화 회귀 테스트(CI 실행)
 │   ├── new-dec.sh                  ← DEC 번호 원자 할당 (/dec 가 호출)
@@ -141,7 +146,7 @@ claude-project-scaffold/
 └── .claude/
     ├── CLAUDE.md                   ← 200줄 이하 + @import (방법론 룰 9종 + commands)
     ├── settings.json               ← 팀 공유 설정 + Stop hook(비차단 check-docs)
-    ├── commands/                   ← 슬래시 커맨드 /dec · /new-feature (harness 동사)
+    ├── commands/                   ← 슬래시 커맨드 /dec · /new-feature · /release (harness 동사)
     ├── rules/                      ← 방법론 룰 9종 + commands.md(프로젝트 명령어)
     ├── decisions/                  ← 결정 로그 + ADR 템플릿 (append-only 누적)
     ├── docs/                       ← 요구사항(2종) + 아키텍처 (영구)
@@ -193,8 +198,11 @@ claude-project-scaffold/
 | `scripts/test-new-dec.sh` | new-dec 회귀 테스트(번호 할당·말미 정규화·접합 방지). CI에서 실행 | 강제(테스트) |
 | `scripts/new-dec.sh` | 다음 DEC 번호 **원자 할당** + 골격 append (병렬 세션 충돌 예방). append 전 말미를 정규화해 로그를 비운 상태에서도 접합되지 않음 | 강제(결정론) |
 | `scripts/new-feature.sh` | 오늘 날짜로 spec/plan 골격 생성 | 강제(결정론) |
+| `scripts/lib-version.sh` | 버전 SoT 감지·정책 조회·changelog/tag 조회. **순수 조회 전용**(쓰기·경고 없음) — check-docs와 new-release가 공유 | 공유 라이브러리 |
+| `scripts/new-release.sh` | 버전 bump(쓰기 후 재검증) + changelog 마감 + README 골격 삽입. git 부작용 없음 | 강제(결정론) |
 | `.claude/commands/dec.md` | `/dec <제목>` — new-dec.sh 호출 후 결정 내용 작성 안내 | harness 동사 |
 | `.claude/commands/new-feature.md` | `/new-feature <slug>` — new-feature.sh 호출 후 brainstorming 게이트 안내 | harness 동사 |
+| `.claude/commands/release.md` | `/release <bump>` — new-release.sh 호출 후 README 요약 이관·납품물 확인 안내 | harness 동사 |
 | `.github/workflows/check-docs.yml` | push/PR에서 `check-docs.sh --strict` 실행 — 병합 지점 차단 게이트 | 강제(차단) |
 
 > **로컬은 부드럽게, 병합 지점은 엄격하게**: Stop hook은 비차단(경고), CI는 차단(strict)이다(DEC-006).
@@ -247,6 +255,8 @@ claude-project-scaffold/
 | 요구사항 | `.claude/docs/01-*-requirements.md` | ✅ `check-docs.sh` 상호 참조 검사 |
 | 아키텍처 | `.claude/docs/02-architecture.md` | ✅ `check-docs.sh` 플레이스홀더 |
 | 진행 현황 | `.claude/workspace/todo.md` | ✅ `check-docs.sh` 플레이스홀더 |
+| 변경 이력 | `.claude/workspace/changelog.md` | ✅ `check-docs.sh` 스테일 검사·`new-release.sh` |
+| 버전 SoT | 매니페스트 우선, 없으면 루트 `VERSION` | ✅ `lib-version.sh` 자동 감지 |
 
 **판정 기준**: 기본적으로 **harness가 하드코딩한 경로를 정본으로 삼는 편이 유리하다** — 기계
 검사를 그대로 받고, 상류(스캐폴드) 갱신 시 재작업이 없다. 기존 경로를 정본으로 유지해야 한다면
@@ -353,6 +363,9 @@ greenfield는 "앞으로 만들 것"을 적지만 코드가 있는 brownfield는
       → bash scripts/check-docs.sh 로 기계 확인
 - [ ] .gitignore 에 settings.local.json·node_modules·dist 가 포함됐는가
 - [ ] decision-log.md 를 비우고 대상 프로젝트의 DEC-001부터 시작하는가
+- [ ] workspace/changelog.md 를 비우고 대상 프로젝트 이력으로 시작하는가
+- [ ] 버전 SoT 가 의도한 것인가 — 매니페스트가 있으면 그쪽이 정본, 없으면 루트 VERSION.
+      릴리즈를 끊지 않는 프로젝트면 commands.md 에 version-policy: none 을 선언했는가
 
 greenfield 추가
 - [ ] _skeleton-README.md 를 README.md 로 교체하고 스캐폴드 소개 README를 정리했는가
@@ -430,3 +443,26 @@ greenfield 추가
 게이트 내용은 위 [§작업 사이클 게이트](#작업-사이클-게이트-매-작업-동일)와 동일하다. 이 README의
 해당 섹션 + `.claude/rules/`가 이미 대안 2의 역할을 겸하며, 별도 `METHODOLOGY.md`로 떼어내
 단독 검토·공유용으로 쓸 수도 있다.
+
+---
+
+## Changelog
+
+> 외부 공개용 요약. 내부 상세 이력은 `.claude/workspace/changelog.md`.
+> 릴리즈는 `/release <major|minor|patch>` 로 끊습니다.
+
+### v0.1.0 (2026-07-27)
+
+첫 릴리즈. 방법론 룰 9종 + 얕은 harness 척추가 갖춰지고, 실제 브라운필드 적용 피드백을
+반영한 시점.
+
+- **feat**: 버전·changelog 정합성 harness — 버전 SoT 자동 감지(매니페스트 우선 → `VERSION`),
+  changelog 스테일 검사, 버전 3자 일치 검사, `/release` 슬래시 커맨드.
+- **feat**: 얕은 harness 척추 — `check-docs.sh` · Stop hook(비차단) · CI(strict 차단) ·
+  슬래시 커맨드 3종(`/dec` · `/new-feature` · `/release`).
+- **feat**: 방법론 룰 9종 + 요구사항 2분할(REQ/FR) + DEC 결정 로그 + 납품 문서 골격
+  (사용자 가이드 · How It Works).
+- **fix**: `/dec` 가 로그를 비운 상태(부트스트랩 직후)에서 항목을 앞 문단에 접합하던 버그.
+- **fix**: 문서 정합성 검사가 한국어 열거형·규약 산문을 플레이스홀더로 오인하던 오탐.
+- **docs**: brownfield 적용 절차를 코드/문서 2축 판별 + 경로 충돌 조정 0단계로 개정.
+

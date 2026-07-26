@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # changelog 스테일 검사(§5)가 git 히스토리를 읽는다. 기본 depth 1(shallow)이면
+          # 스크립트가 판정 불가로 조용히 스킵하므로, 실제로 돌게 하려면 전체 히스토리가 필요하다.
+          fetch-depth: 0
       - name: check-docs 회귀 테스트 (검출 로직)
         run: bash scripts/test-check-docs.sh
       - name: new-dec 회귀 테스트 (번호 할당·말미 정규화)

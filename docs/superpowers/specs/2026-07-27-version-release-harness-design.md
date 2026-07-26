@@ -1,6 +1,6 @@
 ---
 related: [BACKLOG-002, DEC-011]
-status: draft
+status: done
 date: 2026-07-27
 ---
 
@@ -43,9 +43,9 @@ date: 2026-07-27
 
 ```
 scripts/lib-version.sh          신규 · 순수 조회 함수만 (부작용·출력 없음)
-scripts/check-docs.sh           §4 changelog 스테일 · §5 버전 3자 일치 추가
+scripts/check-docs.sh           §5 changelog 스테일 · §6 버전 3자 일치 추가
 scripts/new-release.sh          신규 · bump + 마감 + 골격 삽입 (git 부작용 없음)
-scripts/test-check-docs.sh      §4·§5 회귀 케이스 추가
+scripts/test-check-docs.sh      §5·§6 회귀 케이스 추가
 .claude/commands/release.md     신규 슬래시 커맨드
 ```
 
@@ -73,7 +73,7 @@ lib은 값을 **반환만** 하고 경고 문구는 호출자가 만든다. 그�
 2) pyproject.toml  → [project] version
 3) Cargo.toml      → [package] version
 4) VERSION (루트)  → 첫 줄
-→ 하나도 없으면 버전 검사(§5) 자체를 건너뛴다
+→ 하나도 없으면 버전 검사(§6) 자체를 건너뛴다
 ```
 
 언어 매니페스트가 있으면 그것이 SoT다. 별도 버전 파일을 함께 두면 매니페스트와 이중 관리가 되어
@@ -88,11 +88,11 @@ lib은 값을 **반환만** 하고 경고 문구는 호출자가 만든다. 그�
 version-policy: semver
 ```
 
-`none`은 §5를 끈다(매니페스트에 version이 형식상 박혀 있으나 실제로는 릴리즈를 안 끊는
-private 내부 서비스용). `calver`는 §5의 semver 형식 검사만 끄고, `/release`가
+`none`은 §6을 끈다(매니페스트에 version이 형식상 박혀 있으나 실제로는 릴리즈를 안 끊는
+private 내부 서비스용). `calver`는 §6의 semver 형식 검사만 끄고, `/release`가
 `major|minor|patch` 대신 명시 버전 인자를 요구한다.
 
-### §4 changelog 스테일 검사
+### §5 changelog 스테일 검사
 
 ```
 기준점 = git log -1 --format=%H -- .claude/workspace/changelog.md
@@ -109,7 +109,7 @@ private 내부 서비스용). `calver`는 §5의 semver 형식 검사만 끄고,
 - **git 레포가 아니거나 shallow clone이면 조용히 건너뛴다** — 경고가 아니라 스킵.
   `actions/checkout@v4`는 기본 depth 1이므로 CI에 `fetch-depth: 0`을 넣어 실제로 돌게 한다.
 
-### §5 버전 3자 일치 검사
+### §6 버전 3자 일치 검사
 
 정책이 `none`이 아니고 SoT가 있을 때만 돈다.
 
@@ -186,21 +186,24 @@ README에서 이걸 자동으로 잡아**, 요약을 안 채우면 strict CI가 
 
 | 리스크 | 대응 |
 |--------|------|
-| `actions/checkout@v4` 기본 shallow clone에서 §4가 무력화 | CI에 `fetch-depth: 0` 추가. 스크립트는 shallow를 감지해 조용히 스킵 |
+| `actions/checkout@v4` 기본 shallow clone에서 §5가 무력화 | CI에 `fetch-depth: 0` 추가. 스크립트는 shallow를 감지해 조용히 스킵 |
 | `pyproject.toml`·`Cargo.toml` sed 치환 실패 | 쓰기 후 재검증(4단계) — 실패 시 즉시 종료 |
-| §4가 커밋 타입 표기에 의존 (타입 오타 시 미검출) | 감수. 타입 표기는 `conventions.md`가 이미 규정하며, 게이트의 목적은 실수 방지지 우회 봉쇄가 아님 |
+| §5가 커밋 타입 표기에 의존 (타입 오타 시 미검출) | 감수. 타입 표기는 `conventions.md`가 이미 규정하며, 게이트의 목적은 실수 방지지 우회 봉쇄가 아님 |
 | `check-docs.sh`가 약 100줄에서 150줄로 증가 | 감수. 더 커지면 별도 진입점으로 분리하되 lib은 그대로 재사용 |
 | 임시 git 레포를 만드는 회귀 테스트가 CI 환경 설정에 의존 | `git -c user.email=... -c user.name=...`로 전역 설정 비의존 |
 
 ## 완료 조건
 
-- [ ] `lib-version.sh` 5개 함수 구현, 매니페스트 4종 감지 동작
-- [ ] `check-docs.sh` §4·§5 추가, 기존 §1~§3 회귀 없음
-- [ ] `new-release.sh` 구현, 쓰기 후 재검증 포함, git 부작용 없음
-- [ ] `.claude/commands/release.md` 추가
-- [ ] `test-check-docs.sh`에 9개 케이스 추가 및 전체 통과
-- [ ] CI에 `fetch-depth: 0` · `settings.json`에 권한 추가
-- [ ] 룰 3종(`commands.md`·`readme-sync.md`·`project-init.md`) + `CLAUDE.md` 갱신
-- [ ] 도그푸딩: `VERSION` 0.1.0 · changelog 백필 6건 · README 반영
-- [ ] `DEC-011` 채움, `todo.md`에 `BACKLOG-002` 등록
-- [ ] `bash scripts/check-docs.sh --strict` 통과
+> 구현 결과 섹션 번호가 §4→§5, §5→§6으로 밀렸다 — 선행 작업(DEC-012)이 DEC 댕글링 검사를
+> §4로 신설했기 때문이다. 아래는 실제 구현 기준으로 기록한다.
+
+- [x] `lib-version.sh` 5개 함수 구현, 매니페스트 4종 감지 동작
+- [x] `check-docs.sh` §5·§6 추가, 기존 §1~§4 회귀 없음
+- [x] `new-release.sh` 구현, 쓰기 후 재검증 포함, git 부작용 없음
+- [x] `.claude/commands/release.md` 추가
+- [x] `test-check-docs.sh`에 9개 케이스 추가 및 전체 통과
+- [x] CI에 `fetch-depth: 0` · `settings.json`에 권한 추가
+- [x] 룰 3종(`commands.md`·`readme-sync.md`·`project-init.md`) + `CLAUDE.md` 갱신
+- [x] 도그푸딩: `VERSION` 0.1.0 · changelog 백필 6건 · README 반영
+- [x] `DEC-011` 채움, `todo.md`에 `BACKLOG-002` 등록
+- [x] `bash scripts/check-docs.sh --strict` 통과

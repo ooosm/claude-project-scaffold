@@ -22,15 +22,35 @@
 |--------|----------|---------|
 | `/dec <제목>` | `scripts/new-dec.sh` | 다음 DEC 번호 **원자 할당** + 골격 append (병렬 세션 충돌 예방) |
 | `/new-feature <slug>` | `scripts/new-feature.sh` | 오늘 날짜로 spec/plan 골격 생성 → brainstorming 게이트 진입 |
+| `/release <bump>` | `scripts/new-release.sh` | 버전 SoT bump(쓰기 후 재검증) + changelog 마감 + README 골격 삽입. **git 부작용 없음**(커밋·태그는 사람이) |
 
 ```bash
-bash scripts/check-docs.sh          # 플레이스홀더 잔존·REQ/FR 참조·DEC 번호 검사 (경고만, exit 0)
+bash scripts/check-docs.sh          # 플레이스홀더·REQ/FR·DEC 번호/댕글링·changelog 스테일·버전 3자 일치 (경고만, exit 0)
 bash scripts/check-docs.sh --strict # 경고를 실패(exit 1)로 — CI/커밋 전 검사용
 bash scripts/test-check-docs.sh     # check-docs 검출 로직 회귀 테스트 (CI에서 실행)
 bash scripts/test-new-dec.sh        # new-dec 번호 할당·말미 정규화 회귀 테스트 (CI에서 실행)
 bash scripts/new-dec.sh "제목"      # DEC 번호 원자 할당 (보통 /dec 로 호출)
 bash scripts/new-feature.sh slug    # spec/plan 골격 생성 (보통 /new-feature 로 호출)
+bash scripts/new-release.sh minor   # 릴리즈 끊기 (보통 /release 로 호출)
 ```
+
+## 버전 정책
+
+버전 SoT는 **자동 감지**된다 — `package.json` → `pyproject.toml` → `Cargo.toml` → 루트
+`VERSION` 순으로 찾고, 하나도 없으면 버전 검사를 건너뛴다. 매니페스트가 있으면 그것이 이미
+정본이므로 별도 버전 파일을 만들지 않는다(이중 관리는 드리프트를 부른다).
+
+자동 감지를 **override 할 때만** 아래를 선언한다. 선언이 없으면 `semver` 로 동작한다.
+
+```
+version-policy: semver
+```
+
+| 값 | 동작 |
+|----|------|
+| `semver` (기본) | `X.Y.Z` 형식 검사 + `/release major\|minor\|patch` 자동 bump |
+| `calver` | 형식 검사 없음. `/release` 에 **명시 버전**을 준다(예: `2026.07.1`) |
+| `none` | 버전 검사(§6) OFF. 매니페스트에 version이 형식상 박혀 있으나 실제로는 릴리즈를 끊지 않는 private 내부 서비스용 |
 
 ## 강제 배선 (이미 켜져 있음)
 

@@ -62,7 +62,9 @@ rm -f "$T/docs/how-it-works.md"
 new_project() {
   d="$1"
   mkdir -p "$d/scripts" "$d/.claude/docs" "$d/.claude/decisions" "$d/.claude/rules" "$d/docs"
+  mkdir -p "$d/.claude/workspace"
   cp "$HERE/check-docs.sh" "$d/scripts/check-docs.sh"
+  cp "$HERE/lib-version.sh" "$d/scripts/lib-version.sh"
   printf '%s\n' '### REQ-1-1: 로그인' > "$d/.claude/docs/01-impl-requirements.md"
   printf '%s\n' '- **FR-01**: 로그인한다' > "$d/.claude/docs/01-user-requirements.md"
   printf '%s\n' '## DEC-001: 초기 결정 (2026-01-01)' > "$d/.claude/decisions/decision-log.md"
@@ -136,6 +138,95 @@ OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q 'CLAUDE.md' \
   && fail "배포 CLAUDE.md의 규약 산문을 오탐: $(echo "$OUT" | grep -A3 'CLAUDE.md' | head -4 | tr '\n' ' ')" \
   || pass "배포 CLAUDE.md의 규약 산문 오탐 없음(복사 직후 상태)"
+
+# ── git 픽스처 헬퍼 ───────────────────────────────────────────────────────
+# 전역 git 설정에 의존하지 않도록 커밋마다 user 를 인라인으로 준다(CI 환경 비의존).
+gcommit() { (cd "$1" && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m "$2"); }
+git_project() {
+  d="$1"; new_project "$d"
+  (cd "$d" && git init -q 2>/dev/null && git -c user.email=t@t -c user.name=t \
+     commit -q --allow-empty -m 'chore: init')
+}
+# changelog 를 커밋해 기준점을 만든다(이후 커밋이 스테일 카운트 대상).
+commit_changelog() {
+  d="$1"
+  printf '# Changelog\n\n## [Unreleased]\n' > "$d/.claude/workspace/changelog.md"
+  (cd "$d" && git add -A && git -c user.email=t@t -c user.name=t commit -q -m 'docs: changelog')
+}
+strict_code() { (cd "$1" && bash scripts/check-docs.sh --strict >/dev/null 2>&1); echo "$?"; }
+
+# ── §5 changelog 스테일 검사 ──────────────────────────────────────────────
+P="$T/stale3"; git_project "$P"; commit_changelog "$P"
+gcommit "$P" 'feat: 하나'; gcommit "$P" 'fix(auth): 둘'; gcommit "$P" 'feat!: 셋'
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'changelog' && pass "feat/fix 3건 누적 시 changelog 스테일 경고" \
+  || fail "스테일 3건을 놓침"
+
+P="$T/stale2"; git_project "$P"; commit_changelog "$P"
+gcommit "$P" 'feat: 하나'; gcommit "$P" 'fix: 둘'
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'changelog' && fail "경계값 2건에서 오탐" || pass "feat/fix 2건은 유예(경계값)"
+
+P="$T/staletype"; git_project "$P"; commit_changelog "$P"
+for m in 'docs: 하나' 'chore: 둘' 'refactor: 셋' 'test: 넷' 'perf: 다섯'; do gcommit "$P" "$m"; done
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'changelog' && fail "docs/chore/refactor/test/perf 를 오탐" \
+  || pass "feat/fix 외 타입은 카운트하지 않음"
+
+# changelog 를 지금 고치는 중(워킹트리 변경)이면 스테일이 아니다.
+# 커밋 전까지 계속 경고하면 로컬 Stop hook 이 작업 내내 시끄러워진다.
+P="$T/staledirty"; git_project "$P"; commit_changelog "$P"
+gcommit "$P" 'feat: 하나'; gcommit "$P" 'fix: 둘'; gcommit "$P" 'feat: 셋'
+printf '# Changelog\n\n## [Unreleased]\n- **feat**: 방금 반영한 항목\n' > "$P/.claude/workspace/changelog.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'changelog' && fail "changelog 를 고치는 중인데 스테일 경고" \
+  || pass "changelog 워킹트리 변경 중이면 스테일 아님"
+
+# git 레포가 아니면 히스토리 판정이 성립하지 않는다 → 경고가 아니라 조용한 스킵.
+P="$T/nogit"; new_project "$P"
+printf '# Changelog\n\n## [Unreleased]\n' > "$P/.claude/workspace/changelog.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'changelog' && fail "git 레포가 아닌데 스테일 경고" || pass "git 레포 아니면 스테일 검사 스킵"
+[ "$(strict_code "$P")" -eq 0 ] && pass "git 레포 아니어도 --strict 통과" || fail "git 아닌데 --strict 실패"
+
+# ── §6 버전 3자 일치 검사 ─────────────────────────────────────────────────
+mk_version_project() {
+  d="$1"; git_project "$d"
+  printf '%s\n' "$2" > "$d/VERSION"
+  printf '# Changelog\n\n## [Unreleased]\n\n## v%s (2026-01-01)\n- 초기\n' "$3" \
+    > "$d/.claude/workspace/changelog.md"
+  (cd "$d" && git add -A && git -c user.email=t@t -c user.name=t commit -q -m 'docs: changelog')
+}
+
+P="$T/vermismatch"; mk_version_project "$P" "0.3.0" "0.2.0"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q '0.3.0' && pass "SoT ↔ changelog 최신 릴리즈 불일치 경고" \
+  || fail "버전 불일치를 놓침"
+
+P="$T/verinvert"; mk_version_project "$P" "0.3.0" "0.3.0"
+(cd "$P" && git tag v0.4.0)
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'v0.4.0\|0.4.0' && pass "tag 가 SoT 보다 앞선 역전 경고" || fail "버전 역전을 놓침"
+
+# /release 는 파일만 고치고 태그는 사람이 단다. 그 사이 구간을 경고로 만들면
+# 릴리즈할 때마다 빨간불이 뜨고 CI(PR 브랜치엔 태그 없음)가 상시 실패한다.
+P="$T/vernotag"; mk_version_project "$P" "0.3.0" "0.3.0"
+[ "$(strict_code "$P")" -eq 0 ] && pass "태그 미달성은 안내만 — --strict 통과" \
+  || fail "태그 없다고 --strict 실패(오탐)"
+
+P="$T/nosot"; git_project "$P"
+printf '# Changelog\n\n## v9.9.9 (2026-01-01)\n' > "$P/.claude/workspace/changelog.md"
+(cd "$P" && git add -A && git -c user.email=t@t -c user.name=t commit -q -m 'docs: changelog')
+[ "$(strict_code "$P")" -eq 0 ] && pass "SoT 없으면 버전 검사 자체를 건너뜀" || fail "SoT 없는데 버전 경고"
+
+P="$T/policynone"; mk_version_project "$P" "0.3.0" "0.2.0"
+printf '# 명령어\n\n## 버전 정책\nversion-policy: none\n' > "$P/.claude/rules/commands.md"
+[ "$(strict_code "$P")" -eq 0 ] && pass "version-policy: none 이면 버전 검사 OFF" \
+  || fail "policy none 인데 버전 경고"
+
+P="$T/badformat"; mk_version_project "$P" "0.3" "0.3"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q '0.3' && pass "semver 형식이 아닌 SoT 경고" || fail "형식 위반을 놓침"
 
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1

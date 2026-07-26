@@ -46,6 +46,7 @@
 ## Changelog
 
 > 외부 공개용 요약. 내부 상세 이력은 `.claude/workspace/changelog.md`.
+> 이 섹션은 `/release <major|minor|patch>` 가 골격을 삽입합니다 — 손으로 버전을 맞추지 마세요.
 
 ### YYYY-MM-DD
 - **feat**: 초기 릴리즈

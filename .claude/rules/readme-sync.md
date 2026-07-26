@@ -56,15 +56,26 @@
 
 ## 릴리즈 절차 (버전 끊기)
 
-납품/배포 시점 또는 사용자 지시가 있을 때 릴리즈를 끊는다:
+납품/배포 시점 또는 사용자 지시가 있을 때 릴리즈를 끊는다. **손으로 하지 말고 `/release`를 쓴다**
+— 버전 SoT·changelog·README 세 곳을 동시에 맞춰야 하는데, 손으로 하면 어긋나고 그 어긋남을
+`check-docs` §6이 잡는다.
 
-1. **버전 결정** — SemVer(`MAJOR.MINOR.PATCH`). 호환성 깨짐=MAJOR, 기능 추가=MINOR, 수정=PATCH.
-2. **changelog 마감** — `workspace/changelog.md`의 `[Unreleased]` 항목을
-   `## vX.Y.Z (YYYY-MM-DD)` 섹션으로 이동한다.
-3. **README 반영** — 그중 사용자에게 의미 있는 항목을 README Changelog에 요약 이관.
-4. **태그** — `git tag vX.Y.Z` (버전 결정에 트레이드오프가 있었으면 DEC 기록).
-5. **납품물 확인** — `docs/user-guide.md`·`docs/how-it-works.md`·README가 릴리즈 시점 실제
+1. **changelog 최신화** — `workspace/changelog.md`의 `[Unreleased]`가 이번 릴리즈 변경을
+   **실제 구현 근거로** 담고 있는지 먼저 확인한다(추측 금지).
+2. **버전 결정 + `/release`** — SemVer(`MAJOR.MINOR.PATCH`). 호환성 깨짐=MAJOR, 기능 추가=MINOR,
+   수정=PATCH. `/release major|minor|patch`가 버전 SoT bump(쓰기 후 재검증) + `[Unreleased]`
+   마감 + README Changelog 골격 삽입까지 한다.
+3. **README 요약 채움** — 삽입된 골격에 사용자에게 의미 있는 항목만 골라 옮긴다.
+   안 채우면 플레이스홀더가 남아 `check-docs` §1이 잡는다(strict CI가 릴리즈 커밋을 차단).
+4. **납품물 확인** — `docs/user-guide.md`·`docs/how-it-works.md`·README가 릴리즈 시점 실제
    동작과 일치하는지 확인(how-it-works는 납품 주고받는 쪽의 동작 이해 문서이므로 특히 중요).
+5. **커밋·태그** — 사용자에게 확인받고 `git commit -am "chore: release vX.Y.Z"` → `git tag vX.Y.Z`.
+   `/release`는 git 부작용을 만들지 않는다(→ `git-workflow.md`).
+   버전 결정에 트레이드오프가 있었으면 DEC로 기록한다.
+
+> 버전 SoT는 자동 감지되고 정책은 `commands.md`의 `## 버전 정책`에서 override한다.
+> 릴리즈 개념이 없는 프로젝트는 `version-policy: none`으로 버전 검사를 끄되, **changelog는
+> 계속 쌓는다** — 스테일 검사(§5)는 정책과 무관하게 동작한다.
 
 ## 주의
 
