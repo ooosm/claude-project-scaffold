@@ -18,7 +18,8 @@ _최종 업데이트: 2026-07-27_
 - [x] 버전·changelog 정합성 harness (BACKLOG-002, DEC-011) — 완료: 2026-07-27
 
 ## ⏳ 대기 중
-- [ ] 글로벌 룰 버전 관리 (BACKLOG-001) — `~/.claude`를 별도 git 레포로 분리·추적
+- [ ] 글로벌 룰 버전 관리 (BACKLOG-001) — `~/.claude`에서 **허용목록 방식**으로 git 추적
+      (통째 추적은 기각 — DEC-014)
 
 ## 🚧 블로커
 - (없음)
@@ -29,5 +30,5 @@ _최종 업데이트: 2026-07-27_
 
 | ID | 제목 | 상태 | spec/plan |
 |----|------|------|-----------|
-| BACKLOG-001 | 글로벌 룰 버전 관리(`~/.claude` git 추적) | ⏳ 대기 | (미착수) |
+| BACKLOG-001 | 글로벌 룰 버전 관리(`~/.claude` 허용목록 git 추적 — 저작 파일만) | ⏳ 대기 | DEC-014 |
 | BACKLOG-002 | 버전·changelog 정합성 harness(lib-version·check-docs §5·§6·`/release`) | ✅ 완료 | `2026-07-27-version-release-harness-design.md` |
