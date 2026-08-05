@@ -199,6 +199,20 @@ if [ -f "$TODO" ] && [ -n "$(backlog_ids)" ]; then
     [ -n "$st" ] && ! backlog_done "$st" \
       && warn "BACKLOG 불일치: $TODO 의 완료 체크박스가 ${id} 를 언급하는데 표의 상태는 '${st}'"
   done
+
+  # (A) 릴리즈까지 끝났는데 표는 미완료. 릴리즈 구간 = 첫 '## vX.Y.Z' 헤딩 이후 전부.
+  # [Unreleased] 를 제외하는 이유: 작업 중 ID 언급은 정상이고, 그걸 경고로 만들면
+  # 작업 내내 로컬 Stop hook 이 시끄러워진다(§5가 유예를 두는 것과 같은 이유).
+  # 알려진 한계: changelog 에 "착수했다"는 뜻으로 ID를 적는 습관이 있으면 오탐한다.
+  CL="${CHANGELOG_PATH:-.claude/workspace/changelog.md}"
+  if [ -f "$CL" ]; then
+    for id in $(awk '/^##[[:space:]]+v?[0-9]+\.[0-9]+\.[0-9]+/ {rel=1} rel' "$CL" \
+                | grep -oE 'BACKLOG-[0-9]+' | sort -u); do
+      st=$(backlog_status "$id")
+      [ -n "$st" ] && ! backlog_done "$st" \
+        && warn "BACKLOG 스테일: $CL 의 릴리즈된 구간이 ${id} 를 언급하는데 $TODO 표의 상태는 '${st}' — 닫고 근거를 남기세요"
+    done
+  fi
 fi
 
 # ── 결과 ─────────────────────────────────────────────────────────────────

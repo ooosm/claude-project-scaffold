@@ -252,5 +252,44 @@ OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q 'BACKLOG-005' \
   && fail "BACKLOG 표가 없는데 경고(스킵 조건 미동작)" || pass "BACKLOG 표 없으면 §7 스킵"
 
+# 릴리즈된 구간(첫 ## vX.Y.Z 이후)에 언급됐는데 표가 미완료 → 파생 프로젝트에서 실제로 난 사고.
+P="$T/backlog-a"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-021 | flexContainer 구현 | 🔄 진행중 | |
+EOF
+cat > "$P/.claude/workspace/changelog.md" <<'EOF'
+# Changelog
+## [Unreleased]
+## v4.5.0 (2026-08-01)
+- **feat**: flexContainer 구현. 관련 BACKLOG-021
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-021' \
+  && pass "§7-A 릴리즈된 구간 언급 ↔ 표 미완료 검출" || fail "§7-A 릴리즈 스테일을 놓침"
+
+# [Unreleased] 안의 언급은 작업 중이라는 뜻이므로 경고하지 않는다(오탐 상시화 방지).
+P="$T/backlog-a-unreleased"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-021 | flexContainer 구현 | 🔄 진행중 | |
+EOF
+cat > "$P/.claude/workspace/changelog.md" <<'EOF'
+# Changelog
+## [Unreleased]
+- **feat**: flexContainer 작업 착수. 관련 BACKLOG-021
+## v4.4.0 (2026-07-20)
+- **fix**: 무관한 수정
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-021' \
+  && fail "[Unreleased] 언급을 오탐" || pass "§7-A [Unreleased] 언급은 무시"
+
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1
