@@ -228,5 +228,29 @@ P="$T/badformat"; mk_version_project "$P" "0.3" "0.3"
 OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q '0.3' && pass "semver 형식이 아닌 SoT 경고" || fail "형식 위반을 놓침"
 
+# ── §7 BACKLOG 상태 정합성 ────────────────────────────────────────────────
+# 완료 체크박스가 닫혔는데 BACKLOG 표만 낡는 실패를 잡는다(readme-sync 갱신 묶음 3번).
+P="$T/backlog-b"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## ✅ 완료
+- [x] flexContainer 구현 (BACKLOG-005) — 완료: 2026-08-01
+
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-005 | flexContainer 구현 | 🔄 진행중 | |
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-005' \
+  && pass "§7-B 완료 체크박스 ↔ 표 상태 불일치 검출" || fail "§7-B 자기모순을 놓침"
+
+# 표가 없으면(= BACKLOG를 쓰지 않는 프로젝트) 검사 자체를 건너뛴다.
+P="$T/backlog-skip"; new_project "$P"
+printf '%s\n' '# TODO' '- [x] flexContainer 구현 (BACKLOG-005)' > "$P/.claude/workspace/todo.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-005' \
+  && fail "BACKLOG 표가 없는데 경고(스킵 조건 미동작)" || pass "BACKLOG 표 없으면 §7 스킵"
+
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1

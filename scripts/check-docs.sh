@@ -160,6 +160,47 @@ if command -v detect_version_sot >/dev/null 2>&1; then
   fi
 fi
 
+# ── 7. BACKLOG 상태 정합성 검사 ──────────────────────────────────────────
+# 갱신 묶음(readme-sync.md) 3번이 지켜지지 않으면 BACKLOG 표만 조용히 낡는다. 룰 문장으로는
+# 이미 한 번 실패했으므로(§5 changelog와 같은 실패 모드) 기계로 잡는다. 근거: DEC-015.
+# 재료가 없으면 스킵한다 — BACKLOG 표를 쓰지 않는 프로젝트에 경고를 만들지 않는다.
+TODO=".claude/workspace/todo.md"
+
+# 표에 정의된 BACKLOG 번호들. 행 형식: | BACKLOG-NNN | 제목 | 상태 | 근거 |
+backlog_ids() {
+  [ -f "$TODO" ] || return 0
+  grep -oE '^\|[[:space:]]*BACKLOG-[0-9]+' "$TODO" | grep -oE 'BACKLOG-[0-9]+' | sort -u
+}
+
+# 그 행의 상태 칸. awk -F'|' 기준 $2=ID, $4=상태.
+backlog_status() {
+  awk -F'|' -v id="$1" '
+    { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2) }
+    $2 == id { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $4); print $4; exit }
+  ' "$TODO"
+}
+
+# 완료 판정: ✅ 또는 "완료". 단 "미완료"는 완료가 아니다.
+backlog_done() {
+  case "$1" in
+    *미완료*)   return 1 ;;
+    *✅*|*완료*) return 0 ;;
+    *)          return 1 ;;
+  esac
+}
+
+if [ -f "$TODO" ] && [ -n "$(backlog_ids)" ]; then
+  # (B) 같은 파일 안 자기모순 — 완료 체크박스 줄이 언급한 항목인데 표는 미완료.
+  # 신호를 "## ✅ 완료" 섹션이 아니라 `- [x]` 줄로 잡는 이유: 섹션 제목은 프로젝트마다 다르지만
+  # 완료 체크박스는 마크다운 공통 표기라 파생 프로젝트에서 조용히 무력화되지 않는다.
+  for id in $(grep -E '^[[:space:]]*-[[:space:]]*\[x\]' "$TODO" \
+              | grep -oE 'BACKLOG-[0-9]+' | sort -u); do
+    st=$(backlog_status "$id")
+    [ -n "$st" ] && ! backlog_done "$st" \
+      && warn "BACKLOG 불일치: $TODO 의 완료 체크박스가 ${id} 를 언급하는데 표의 상태는 '${st}'"
+  done
+fi
+
 # ── 결과 ─────────────────────────────────────────────────────────────────
 if [ "$WARN" -eq 0 ]; then
   echo "✅ check-docs: 문제 없음"
