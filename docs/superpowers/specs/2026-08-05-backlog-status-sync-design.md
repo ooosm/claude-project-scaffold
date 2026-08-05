@@ -1,6 +1,6 @@
 ---
-related: [BACKLOG-003, DEC-015]
-status: draft
+related: [BACKLOG-003, DEC-015, DEC-016]
+status: done
 date: 2026-08-05
 ---
 

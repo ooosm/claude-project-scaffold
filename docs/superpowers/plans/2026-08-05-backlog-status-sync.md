@@ -1,9 +1,13 @@
 ---
 related: [BACKLOG-003, DEC-015]
 spec: docs/superpowers/specs/2026-08-05-backlog-status-sync-design.md
-status: draft
+status: done
 date: 2026-08-05
 ---
+
+> ⚠️ **실제 구현은 Task 2의 §7-A 코드와 다르다.** 구현 직후 이 레포 자신의 v0.1.0 changelog에서
+> 오탐이 재현되어, 릴리즈 구간 전체가 아니라 `feat`/`fix` 항목의 언급만 완료 신호로 보도록
+> 좁혔다(DEC-016). 실물은 `scripts/check-docs.sh` §7 — 아래 코드 블록을 그대로 복사하지 말 것.
 
 # 구현 계획: BACKLOG 상태 동기화 — 갱신 묶음 항목 + check-docs §7
 
