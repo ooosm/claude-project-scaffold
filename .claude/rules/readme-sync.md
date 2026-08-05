@@ -42,15 +42,45 @@
 ```
 1. .claude/docs/01-impl-requirements.md — 구현 현황 요약 표 (✅/⚠️/❌)
 2. .claude/workspace/todo.md            — 진행/완료 이동 + 날짜
-3. .claude/workspace/changelog.md       — 상세 이력 추가
-4. README.md                            — Features/Changelog/Config (사용자 영향 시)
-5. docs/user-guide.md                   — 실제 동작 근거로 갱신
-6. .claude/docs/02-architecture.md      — 구조(정적)가 바뀐 경우만
-7. docs/how-it-works.md                 — 큰 기능의 동작 흐름(동적)이 바뀐 경우만
+3. .claude/workspace/todo.md            — 관련 BACKLOG 행의 상태·근거 (해당 항목이 있을 때)
+4. .claude/workspace/changelog.md       — 상세 이력 추가
+5. README.md                            — Features/Changelog/Config (사용자 영향 시)
+6. docs/user-guide.md                   — 실제 동작 근거로 갱신
+7. .claude/docs/02-architecture.md      — 구조(정적)가 바뀐 경우만
+8. docs/how-it-works.md                 — 큰 기능의 동작 흐름(동적)이 바뀐 경우만
 ```
 
-> 6·7은 조건부다. architecture는 **정적 구조**(무엇이 있나), how-it-works는 **동적 흐름**
+> 7·8은 조건부다. architecture는 **정적 구조**(무엇이 있나), how-it-works는 **동적 흐름**
 > (트리거별로 어떻게 동작하나) — 서로 상보적이며 상호 링크한다.
+
+### 3번이 왜 2번과 따로 있나
+
+같은 파일이지만 **다른 표**다. 2번은 태스크 목록, 3번은 **BACKLOG 표**다. 예전 목록은
+`todo.md`를 "진행/완료 이동"이라고만 적어 BACKLOG 표는 대상이 아닌 것처럼 읽혔고, 실제로
+파생 프로젝트에서 **구현·릴리즈까지 끝난 항목이 `진행중`으로 남아 있었다**. 갱신할 것이
+없으면 넘어가되, 확인은 한다. 합치지 않는 이유는 체크리스트가 줄 단위로 소비되기 때문이다 —
+절 안의 종속절은 건너뛰기 쉽다.
+
+BACKLOG 행을 닫을 때는 **무엇을 근거로 닫았는지 한 줄**을 `근거` 열에 남긴다 — spec/plan
+파일명·커밋 해시·확인 방법 중 무엇이든 좋다. "완료"만 적힌 행은 다음 사람이 다시 확인해야 한다.
+
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-002 | 버전·changelog 정합성 harness | ✅ 완료(2026-07-27) | `2026-07-27-version-release-harness-design.md` |
+
+> 이 항목은 `check-docs.sh` §7이 기계적으로 확인한다 — changelog의 `feat`/`fix` 항목이나
+> 완료 체크박스(`- [x]`)가 언급한 BACKLOG인데 표가 미완료면 경고한다. 룰은 의도를 적고,
+> 검사는 결과를 본다. BACKLOG 표가 없는 프로젝트에서는 검사 자체를 건너뛴다.
+
+### 이 체크리스트로 막을 수 없는 것
+
+**다른 작업의 부수 효과로 해소되는 항목**은 완료 시점 체크리스트로 잡히지 않는다. 고친
+쪽에는 그 BACKLOG를 알 이유가 없기 때문이다. 같은 이유로, 항목을 쓸 당시의 관측이 그대로
+굳는 경우도 있다(증상이 바뀌었는데 설명은 예전 그대로인 항목).
+
+그래서 **주기적으로 BACKLOG를 코드에 대고 전수조사**한다 — 문서를 다시 읽는 게 아니라
+실행하거나 소스를 확인하는 방식으로. 유효하다고 확인한 항목에도 **근거를 적어 두면** 다음
+조사에서 같은 확인을 반복하지 않는다.
 
 갱신 후 `scripts/check-docs.sh`로 정합성을 확인한다.
 
