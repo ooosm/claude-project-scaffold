@@ -130,7 +130,7 @@ claude-project-scaffold/
 ├── .github/workflows/
 │   └── check-docs.yml              ← CI: push/PR에서 check-docs --strict (차단 게이트)
 ├── scripts/
-│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR·DEC·changelog·버전)
+│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR·DEC·changelog·버전·BACKLOG)
 │   ├── lib-version.sh              ← 버전·changelog 조회 함수(check-docs·new-release 공유)
 │   ├── new-release.sh              ← 릴리즈 끊기 (/release 가 호출)
 │   ├── test-check-docs.sh          ← check-docs 검출 로직 회귀 테스트(CI 실행)
@@ -174,7 +174,7 @@ claude-project-scaffold/
 | `docs/01-impl-requirements.md` | ⑤ 구현 관점 요구사항(REQ-N-M) + 구현 현황 요약 표(SoT) |
 | `docs/01-user-requirements.md` | ⑤ 사용자 관점 기능 요구사항(FR-NN, 체크박스) |
 | `docs/02-architecture.md` | 아키텍처 스냅샷. greenfield는 첫 구조 확정 시, brownfield는 도입 시 역설계로 작성 |
-| `workspace/todo.md` | ④ 실시간 현황판(🔄 진행/✅ 완료/⏳ 대기/🚧 블로커) + BACKLOG 표 |
+| `workspace/todo.md` | ④ 실시간 현황판(🔄 진행/✅ 완료/⏳ 대기/🚧 블로커) + BACKLOG 표(상태·근거, check-docs §7이 검사) |
 | `workspace/changelog.md` | 내부 상세 기술 이력(외부 요약은 대상 README의 Changelog) |
 
 ### `docs/` — 사람용 납품 문서 + 작업 단위 산출물

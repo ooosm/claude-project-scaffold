@@ -13,7 +13,7 @@
 │   └── check-docs.yml               ← CI: push/PR에서 check-docs --strict (차단)
 ├── VERSION                          ← 버전 SoT(언어 매니페스트가 없을 때만 — 있으면 그쪽이 정본)
 ├── scripts/
-│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC·changelog·버전)
+│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC·changelog·버전·BACKLOG)
 │   ├── lib-version.sh               ← 버전·changelog 조회 함수(check-docs·new-release 공유)
 │   ├── new-release.sh               ← 릴리즈 끊기 (/release)
 │   ├── test-check-docs.sh           ← check-docs 검출 로직 회귀 테스트 (CI)

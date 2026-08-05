@@ -25,7 +25,7 @@
 | `/release <bump>` | `scripts/new-release.sh` | 버전 SoT bump(쓰기 후 재검증) + changelog 마감 + README 골격 삽입. **git 부작용 없음**(커밋·태그는 사람이) |
 
 ```bash
-bash scripts/check-docs.sh          # 플레이스홀더·REQ/FR·DEC 번호/댕글링·changelog 스테일·버전 3자 일치 (경고만, exit 0)
+bash scripts/check-docs.sh          # 플레이스홀더·REQ/FR·DEC 번호/댕글링·changelog 스테일·버전 3자 일치·BACKLOG 상태 (경고만, exit 0)
 bash scripts/check-docs.sh --strict # 경고를 실패(exit 1)로 — CI/커밋 전 검사용
 bash scripts/test-check-docs.sh     # check-docs 검출 로직 회귀 테스트 (CI에서 실행)
 bash scripts/test-new-dec.sh        # new-dec 번호 할당·말미 정규화 회귀 테스트 (CI에서 실행)
