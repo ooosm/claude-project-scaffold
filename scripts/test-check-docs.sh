@@ -291,5 +291,79 @@ OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q 'BACKLOG-021' \
   && fail "[Unreleased] 언급을 오탐" || pass "§7-A [Unreleased] 언급은 무시"
 
+# docs 항목의 언급은 "그 BACKLOG를 적어뒀다"는 뜻이지 완료가 아니다 — 이 레포 자신의 v0.1.0
+# "글로벌 룰 버전 관리를 README 로드맵 + BACKLOG-001로 기록" 줄에서 실제로 오탐이 났다.
+P="$T/backlog-a-docs"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-001 | 글로벌 룰 버전 관리 | ⏳ 대기 | DEC-014 |
+EOF
+cat > "$P/.claude/workspace/changelog.md" <<'EOF'
+# Changelog
+## [Unreleased]
+## v0.1.0 (2026-07-27)
+- **docs**: 글로벌 룰 버전 관리를 README 로드맵 + BACKLOG-001로 기록.
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-001' \
+  && fail "docs 항목의 BACKLOG 언급을 완료로 오탐" || pass "§7-A docs 항목 언급은 완료 신호 아님"
+
+# 반대로 여러 줄에 걸친 feat 항목의 연속 줄에 있는 ID는 계속 잡아야 한다(정탐 유지).
+P="$T/backlog-a-multiline"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-002 | 정합성 harness | 🔄 진행중 | |
+EOF
+cat > "$P/.claude/workspace/changelog.md" <<'EOF'
+# Changelog
+## v0.1.0 (2026-07-27)
+- **feat**: 버전·changelog 정합성 harness — lib-version, check-docs §5·§6,
+  /release 슬래시 커맨드까지.
+  관련 DEC-011 / BACKLOG-002
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-002' \
+  && pass "§7-A feat 항목의 연속 줄 ID도 검출" || fail "여러 줄 feat 항목의 ID를 놓침"
+
+# 표에서 사라진 항목을 문서가 계속 참조하는 경우(§4 DEC 댕글링과 같은 실패 모드).
+P="$T/backlog-c"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-001 | 남아 있는 항목 | ⏳ 대기 | |
+EOF
+printf '%s\n' '# 명령어' '- 이 절차는 BACKLOG-009 에서 정했다.' > "$P/.claude/rules/commands.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-009' \
+  && pass "§7-C 댕글링 BACKLOG 참조 검출" || fail "§7-C 댕글링 참조를 놓침"
+
+# 규약 설명(백틱)과 형식 예시(코드펜스)는 참조가 아니다 — §4와 동일한 제외 규칙.
+P="$T/backlog-c-example"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-001 | 남아 있는 항목 | ⏳ 대기 | |
+EOF
+cat > "$P/.claude/rules/planning.md" <<'EOF'
+# 계획
+머리말에 `BACKLOG-007` 처럼 상호 참조를 적는다.
+```
+related: [BACKLOG-042, DEC-001]
+```
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -qE 'BACKLOG-007|BACKLOG-042' \
+  && fail "백틱·코드펜스 안 BACKLOG 표기를 오탐" || pass "§7-C 백틱·펜스 제외"
+
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1

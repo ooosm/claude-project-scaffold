@@ -103,17 +103,21 @@ if [ -f "$DECLOG" ]; then
   fi
 fi
 
+# ── 참조 검사용 문서 집합 (§4 DEC · §7 BACKLOG 공용) ──────────────────────
+# 작업 단위 산출물(docs/superpowers/)은 제외한다 — 템플릿(_TEMPLATE-*)의 플레이스홀더를
+# 걸러낼 새 규칙이 필요해지는데, 그 비용이 얻는 것보다 크다(DEC-015).
+REF_DOCS=""
+for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md docs/how-it-works.md \
+         .claude/docs/*.md .claude/workspace/*.md .claude/rules/*.md; do
+  [ -f "$f" ] && REF_DOCS="$REF_DOCS $f"
+done
+
 # ── 4. DEC 댕글링 참조 검사 ──────────────────────────────────────────────
 # 부트스트랩은 "로그를 비우고 대상 프로젝트의 DEC-001부터 시작"을 지시하므로, 룰·문서 본문이
 # 참조하는 DEC 번호가 존재하지 않는 결정이 되기 쉽다(REQ/FR 댕글링과 같은 실패 모드인데
 # 지금까지 검사되지 않아 조용히 살아남았다).
 # 코드펜스 안(형식 예시)과 백틱 표기(규약 설명)는 실제 상호 참조가 아니므로 제외한다.
 if [ -f "$DECLOG" ]; then
-  REF_DOCS=""
-  for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md docs/how-it-works.md \
-           .claude/docs/*.md .claude/workspace/*.md .claude/rules/*.md; do
-    [ -f "$f" ] && REF_DOCS="$REF_DOCS $f"
-  done
   for f in $REF_DOCS; do
     for dec in $(strip_fences "$f" | strip_inline_code | grep -oE 'DEC-[0-9]+' | sort -u); do
       grep -qE "^## ${dec}:" "$DECLOG" \
@@ -203,16 +207,36 @@ if [ -f "$TODO" ] && [ -n "$(backlog_ids)" ]; then
   # (A) 릴리즈까지 끝났는데 표는 미완료. 릴리즈 구간 = 첫 '## vX.Y.Z' 헤딩 이후 전부.
   # [Unreleased] 를 제외하는 이유: 작업 중 ID 언급은 정상이고, 그걸 경고로 만들면
   # 작업 내내 로컬 Stop hook 이 시끄러워진다(§5가 유예를 두는 것과 같은 이유).
-  # 알려진 한계: changelog 에 "착수했다"는 뜻으로 ID를 적는 습관이 있으면 오탐한다.
+  #
+  # **feat/fix 항목의 언급만** 완료 신호로 본다. docs·chore 항목은 "그 BACKLOG를 적어뒀다"는
+  # 뜻으로 ID를 인용하는 일이 흔해서, 전 구간을 보면 대기 항목이 릴리즈마다 경고로 뜬다
+  # (이 레포 자신의 v0.1.0 "글로벌 룰 버전 관리를 README 로드맵 + BACKLOG-001로 기록" 줄에서
+  # 실제로 재현했다). feat/fix 만 세는 것은 §5가 이미 쓰는 규약과 같다. 근거: DEC-016.
+  # 항목은 여러 줄에 걸치므로 `- ` 로 시작하는 줄에서 타입을 판정하고 다음 항목까지 유지한다.
   CL="${CHANGELOG_PATH:-.claude/workspace/changelog.md}"
   if [ -f "$CL" ]; then
-    for id in $(awk '/^##[[:space:]]+v?[0-9]+\.[0-9]+\.[0-9]+/ {rel=1} rel' "$CL" \
+    for id in $(awk '
+        /^##[[:space:]]+v?[0-9]+\.[0-9]+\.[0-9]+/ { rel = 1 }
+        !rel { next }
+        /^[[:space:]]*-[[:space:]]/ { keep = ($0 ~ /^[[:space:]]*-[[:space:]]*\*\*(feat|fix)\*\*/) }
+        /^#/ { keep = 0 }
+        keep' "$CL" \
                 | grep -oE 'BACKLOG-[0-9]+' | sort -u); do
       st=$(backlog_status "$id")
       [ -n "$st" ] && ! backlog_done "$st" \
         && warn "BACKLOG 스테일: $CL 의 릴리즈된 구간이 ${id} 를 언급하는데 $TODO 표의 상태는 '${st}' — 닫고 근거를 남기세요"
     done
   fi
+
+  # (C) 표에서 사라진 항목을 문서가 계속 참조 — §4 DEC 댕글링과 같은 실패 모드다.
+  # 제외 규칙도 §4와 동일하다: 코드펜스(형식 예시)와 백틱(규약 설명)은 실제 참조가 아니다.
+  DEFINED=$(backlog_ids)
+  for f in $REF_DOCS; do
+    for id in $(strip_fences "$f" | strip_inline_code | grep -oE 'BACKLOG-[0-9]+' | sort -u); do
+      printf '%s\n' "$DEFINED" | grep -qx "$id" \
+        || warn "댕글링 참조: $f 가 참조한 ${id} 이 $TODO 표에 정의돼 있지 않음"
+    done
+  done
 fi
 
 # ── 결과 ─────────────────────────────────────────────────────────────────
