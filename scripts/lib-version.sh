@@ -63,6 +63,15 @@ changelog_latest_release() {
     | sed -E 's/^##[[:space:]]+v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/'
 }
 
+# changelog 릴리즈 헤딩 중 $1(현재 버전)이 아닌 첫 번째. 없으면 빈 문자열.
+# §8 이 "직전 릴리즈"를 필요로 한다 — latest 는 대개 현재 버전이라 비교 대상이 못 된다.
+changelog_previous_release() {
+  [ -f "$CHANGELOG_PATH" ] || return 0
+  grep -E '^##[[:space:]]+v?[0-9]+\.[0-9]+\.[0-9]+' "$CHANGELOG_PATH" \
+    | sed -E 's/^##[[:space:]]+v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/' \
+    | grep -vx "${1:-}" | head -1
+}
+
 # ── git 상태 ──────────────────────────────────────────────────────────────
 # 검사를 건너뛰어야 하는 상황인지 판정한다. git 레포가 아니거나 shallow clone 이면
 # 히스토리 기반 판정이 성립하지 않으므로 **경고가 아니라 스킵**이 옳다.
@@ -80,6 +89,19 @@ latest_git_tag() {
   git tag -l 'v*' 2>/dev/null \
     | sed -E 's/^v//' \
     | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+    | sort -t. -k1,1n -k2,2n -k3,3n \
+    | tail -1
+}
+
+# semver 태그 중 $1(현재 버전)을 제외한 최댓값. 없으면 빈 문자열.
+# changelog 를 표준 경로($CHANGELOG_PATH)에 두지 않는 레포(루트 CHANGELOG.md 등)를 위한
+# §8 폴백이다. 태그가 없거나 shallow clone 이면 빈 값이 되어 §8 이 조용히 스킵된다.
+previous_git_tag() {
+  git_history_usable || return 0
+  git tag -l 'v*' 2>/dev/null \
+    | sed -E 's/^v//' \
+    | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+    | grep -vx "${1:-}" \
     | sort -t. -k1,1n -k2,2n -k3,3n \
     | tail -1
 }

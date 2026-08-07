@@ -391,5 +391,52 @@ OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q '필수 문서 누락' \
   && fail ".claude/CLAUDE.md 만 있는데 누락으로 오탐" || pass "§9 CLAUDE.md 는 두 위치 중 하나면 통과"
 
+# ── §8 릴리즈 버전의 README 반영 ──────────────────────────────────────────
+# 실제 사고: SoT·changelog·tag 는 다 맞았는데 README 버전 표에 새 행이 없었다(§6은 셋만 본다).
+P="$T/readmever"; mk_version_project "$P" "0.3.0" "0.2.0"
+printf '%s\n' '# 마이프로젝트' '' '| 버전 | 날짜 |' '|---|---|' '| 0.2.0 | 2026-01-01 |' \
+  > "$P/README.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README 버전 미반영' \
+  && pass "§8 직전 버전만 README 에 있으면 경고" || fail "§8 README 미반영을 놓침"
+
+# 현재 버전을 적어 넣으면 경고가 사라진다(자기해소형).
+printf '%s\n' '# 마이프로젝트' '' '| 버전 | 날짜 |' '|---|---|' '| 0.3.0 | 2026-02-01 |' \
+  '| 0.2.0 | 2026-01-01 |' > "$P/README.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README 버전 미반영' \
+  && fail "현재 버전이 README 에 있는데 경고" || pass "§8 현재 버전이 있으면 조용"
+
+# README 에 버전을 적지 않는 프로젝트는 검사 자체를 건너뛴다(오탐 0).
+P="$T/readmever-none"; mk_version_project "$P" "0.3.0" "0.2.0"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README 버전 미반영' \
+  && fail "버전을 안 적는 README 에 오탐" || pass "§8 직전 버전도 없으면 스킵"
+
+# changelog 를 표준 경로에 두지 않는 레포(루트 CHANGELOG.md 등)는 git tag 로 폴백한다.
+P="$T/readmever-tag"; git_project "$P"
+printf '%s\n' '0.3.0' > "$P/VERSION"
+printf '%s\n' '# 마이프로젝트' '지원 버전: 0.2.0' > "$P/README.md"
+(cd "$P" && git add -A && git -c user.email=t@t -c user.name=t commit -q -m 'chore: v0.2.0' \
+   && git tag v0.2.0)
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README 버전 미반영' \
+  && pass "§8 changelog 없으면 git tag 로 폴백" || fail "§8 태그 폴백이 동작하지 않음"
+
+# 버전 문자열 경계 — 10.2.0 은 0.2.0 의 포함이 아니다.
+P="$T/readmever-boundary"; mk_version_project "$P" "0.3.0" "0.2.0"
+printf '%s\n' '# 마이프로젝트' '빌드 번호 10.2.0 참고' > "$P/README.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README 버전 미반영' \
+  && fail "10.2.0 을 0.2.0 으로 오인" || pass "§8 버전 문자열 경계 구분"
+
+# version-policy: none 이면 §6 과 동일하게 검사하지 않는다.
+P="$T/readmever-policy"; mk_version_project "$P" "0.3.0" "0.2.0"
+printf '%s\n' '# 마이프로젝트' '버전 0.2.0' > "$P/README.md"
+printf '# 명령어\n\n## 버전 정책\nversion-policy: none\n' > "$P/.claude/rules/commands.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README 버전 미반영' \
+  && fail "policy none 인데 §8 경고" || pass "§8 version-policy: none 이면 OFF"
+
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1

@@ -249,6 +249,32 @@ if [ -f "$TODO" ] && [ -n "$(backlog_ids)" ]; then
   done
 fi
 
+# ── 8. 릴리즈 버전의 README 반영 검사 ────────────────────────────────────
+# §6 은 SoT ↔ changelog ↔ tag 셋만 본다. 그 셋이 다 맞아도 README 가 낡을 수 있고, 실제로
+# 파괴적 변경을 알리는 버전 표가 비어 있는 채로 릴리즈된 적이 있다(DEC-017).
+#
+# 판정: **직전 릴리즈가 README 에 있는데 현재 버전이 없으면** 경고. 둘 다 없으면 그 레포는
+# README 에 버전을 적지 않는 것이므로 스킵한다 — 설정 없이 습관을 자동 감지한다.
+# 직전 버전은 changelog 에서 찾고, 없으면 git tag 로 폴백한다(changelog 를 루트 CHANGELOG.md
+# 에 두는 레포에서도 동작하게).
+# 한계: 문자열 포함만 보므로 행이 있어도 내용이 비면 못 잡고, 첫 릴리즈는 비교 대상이 없다.
+ver_in_file() {  # $1=버전 $2=파일. 10.2.0 을 0.2.0 으로 오인하지 않도록 경계를 본다.
+  esc=$(printf '%s' "$1" | sed 's/\./\\./g')
+  grep -qE "(^|[^0-9.])${esc}([^0-9.]|\$)" "$2"
+}
+
+if command -v detect_version_sot >/dev/null 2>&1 && [ -f "README.md" ]; then
+  POLICY8=$(read_version_policy)
+  SOT8=$(sot_version)
+  if [ "$POLICY8" != "none" ] && [ -n "$SOT8" ]; then
+    PREV8=$(changelog_previous_release "$SOT8")
+    [ -z "$PREV8" ] && PREV8=$(previous_git_tag "$SOT8")
+    if [ -n "$PREV8" ] && ver_in_file "$PREV8" README.md && ! ver_in_file "$SOT8" README.md; then
+      warn "README 버전 미반영: 직전 릴리즈 '$PREV8' 는 README.md 에 있는데 현재 '$SOT8' 이 없습니다 — 버전 표·기능 목록·업그레이드 안내를 확인하세요"
+    fi
+  fi
+fi
+
 # ── 결과 ─────────────────────────────────────────────────────────────────
 if [ "$WARN" -eq 0 ]; then
   echo "✅ check-docs: 문제 없음"
