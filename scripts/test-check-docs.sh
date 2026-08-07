@@ -13,6 +13,8 @@ T="$(mktemp -d)"
 trap 'rm -rf "$T"' EXIT
 mkdir -p "$T/scripts" "$T/.claude/docs" "$T/.claude/decisions" "$T/docs"
 cp "$HERE/check-docs.sh" "$T/scripts/check-docs.sh"
+printf '%s\n' '# 마이프로젝트' '테스트용 최소 README.' > "$T/README.md"
+printf '%s\n' '# 마이프로젝트' '테스트용 최소 CLAUDE.md.' > "$T/CLAUDE.md"
 
 # 더티 문서: 플레이스홀더 잔존 + Mermaid 노드 라벨(비-ASCII 대괄호, 오탐 유발 후보)
 cat > "$T/docs/how-it-works.md" <<'EOF'
@@ -52,10 +54,15 @@ echo "$OUT" | grep -q 'user-guide.md' && fail "클린 문서 오탐([x]/[ ]/링�
 (cd "$T" && bash scripts/check-docs.sh --strict >/dev/null 2>&1)
 [ "$?" -eq 1 ] && pass "--strict 는 경고 시 exit 1" || fail "--strict 종료코드가 1이 아님"
 
-# 클린 전용(더티 제거) → exit 0 이어야
-rm -f "$T/docs/how-it-works.md"
+# 클린 전용(더티를 깨끗한 내용으로 교체) → exit 0 이어야.
+# 파일을 지우지 않는 이유: §9(필수 문서 존재)와 충돌하지 않으면서 의도(클린 문서만 남으면
+# 통과)는 그대로 검증하기 위함이다.
+cat > "$T/docs/how-it-works.md" <<'EOF'
+# 동작 원리 — 마이프로젝트
+요청이 들어오면 라우터가 핸들러를 고르고, 핸들러가 저장소를 호출한다.
+EOF
 (cd "$T" && bash scripts/check-docs.sh --strict >/dev/null 2>&1)
-[ "$?" -eq 0 ] && pass "클린 문서만 남으면 --strict 통과" || fail "클린 문서인데 --strict 실패"
+[ "$?" -eq 0 ] && pass "더티 문서를 클린으로 교체하면 --strict 통과" || fail "클린 문서인데 --strict 실패"
 
 # ── 최소 대상 프로젝트 픽스처 헬퍼 ────────────────────────────────────────
 # _skeleton-README.md 없음 → 플레이스홀더 검사 활성. 구조 검사는 조용히 통과하는 최소 구성.
@@ -68,6 +75,9 @@ new_project() {
   printf '%s\n' '### REQ-1-1: 로그인' > "$d/.claude/docs/01-impl-requirements.md"
   printf '%s\n' '- **FR-01**: 로그인한다' > "$d/.claude/docs/01-user-requirements.md"
   printf '%s\n' '## DEC-001: 초기 결정 (2026-01-01)' > "$d/.claude/decisions/decision-log.md"
+  # §9(필수 문서 존재)가 모든 케이스에 경고를 덧붙이지 않도록 최소 실물을 만든다.
+  printf '%s\n' '# 마이프로젝트' '테스트용 최소 README.' > "$d/README.md"
+  printf '%s\n' '# 마이프로젝트' '테스트용 최소 CLAUDE.md.' > "$d/CLAUDE.md"
 }
 
 # ── 코드펜스 제외 (일반 펜스도 mermaid와 동일하게) ────────────────────────
@@ -364,6 +374,22 @@ EOF
 OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -qE 'BACKLOG-007|BACKLOG-042' \
   && fail "백틱·코드펜스 안 BACKLOG 표기를 오탐" || pass "§7-C 백틱·펜스 제외"
+
+# ── §9 필수 납품 문서 존재 ────────────────────────────────────────────────
+# REAL_DOCS 는 glob 이라 파일이 없으면 조용히 통과한다 — "미작성"은 잡아도 "없음"은 못 잡았다.
+P="$T/reqdocs"; new_project "$P"
+rm -f "$P/README.md" "$P/CLAUDE.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'README.md' && echo "$OUT" | grep -q 'CLAUDE.md' \
+  && pass "§9 필수 문서 누락을 각 파일명으로 검출" || fail "§9 누락을 놓침"
+[ "$(strict_code "$P")" -eq 1 ] && pass "§9 누락이면 --strict exit 1" || fail "§9 누락인데 --strict 통과"
+
+# CLAUDE.md 는 루트/.claude 어느 한쪽만 있어도 된다 — 스캐폴드 자신이 .claude/CLAUDE.md 만 쓴다.
+P="$T/reqdocs-dotclaude"; new_project "$P"
+mv "$P/CLAUDE.md" "$P/.claude/CLAUDE.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q '필수 문서 누락' \
+  && fail ".claude/CLAUDE.md 만 있는데 누락으로 오탐" || pass "§9 CLAUDE.md 는 두 위치 중 하나면 통과"
 
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1

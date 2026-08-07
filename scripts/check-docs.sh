@@ -61,6 +61,16 @@ scan_placeholders() {
 if [ -f "_skeleton-README.md" ]; then
   echo "ℹ️  스캐폴드 템플릿 레포로 감지(_skeleton-README.md 존재) — 플레이스홀더 검사 생략"
 else
+  # ── 9. 필수 납품 문서 존재 검사 ────────────────────────────────────────
+  # 아래 REAL_DOCS 는 glob 이라 **파일이 아예 없으면 조용히 건너뛴다** — "문서가 미작성"은
+  # 잡아도 "문서가 없음"은 못 잡는다. 부트스트랩 직후나 실수로 지운 경우가 그대로 통과했다.
+  # CLAUDE.md 는 루트/`.claude/` 어느 쪽이든 하나면 된다(project-init 이 두 위치를 모두 인정.
+  # 스캐폴드 자신은 `.claude/CLAUDE.md` 만 쓰고 파생 레포들은 루트를 쓴다).
+  # user-guide·how-it-works 를 필수로 두지 않는 이유는 DEC-009 의 lazy 생성 규정 때문이다.
+  [ -f "README.md" ] || warn "필수 문서 누락: README.md"
+  [ -f "CLAUDE.md" ] || [ -f ".claude/CLAUDE.md" ] \
+    || warn "필수 문서 누락: CLAUDE.md (루트 또는 .claude/ 중 한 곳에 필요)"
+
   REAL_DOCS=""
   for f in .claude/CLAUDE.md CLAUDE.md README.md docs/user-guide.md docs/how-it-works.md \
            .claude/docs/*.md .claude/workspace/*.md; do
