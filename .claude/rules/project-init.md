@@ -13,7 +13,7 @@
 │   └── check-docs.yml               ← CI: push/PR에서 check-docs --strict (차단)
 ├── VERSION                          ← 버전 SoT(언어 매니페스트가 없을 때만 — 있으면 그쪽이 정본)
 ├── scripts/
-│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·참조·DEC·changelog·버전·BACKLOG)
+│   ├── check-docs.sh                ← 문서 정합성 검사(플레이스홀더·필수문서·참조·DEC·changelog·버전·BACKLOG·README버전·스탬프)
 │   ├── lib-version.sh               ← 버전·changelog 조회 함수(check-docs·new-release 공유)
 │   ├── new-release.sh               ← 릴리즈 끊기 (/release)
 │   ├── test-check-docs.sh           ← check-docs 검출 로직 회귀 테스트 (CI)
@@ -27,6 +27,7 @@
 │       ├── specs/                   ← brainstorming 산출물(설계 정본) + mockups/
 │       └── plans/                   ← writing-plans 산출물(작업 분해)
 └── .claude/
+    ├── SCAFFOLD-VERSION             ← 받아온 스캐폴드 버전(업스트림과 비교용 — 파생 레포는 손대지 않음)
     ├── CLAUDE.md                    ← (선택) 루트 CLAUDE.md와 통합 가능
     ├── settings.json                ← 팀 공유 설정 + Stop hook(비차단 check-docs)
     ├── settings.local.json          ← 개인 로컬 설정 (.gitignore)

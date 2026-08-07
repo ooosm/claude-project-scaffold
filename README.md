@@ -130,7 +130,7 @@ claude-project-scaffold/
 ├── .github/workflows/
 │   └── check-docs.yml              ← CI: push/PR에서 check-docs --strict (차단 게이트)
 ├── scripts/
-│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·REQ/FR·DEC·changelog·버전·BACKLOG)
+│   ├── check-docs.sh               ← 문서 정합성 검사(플레이스홀더·필수문서·REQ/FR·DEC·changelog·버전·BACKLOG·README버전·스탬프)
 │   ├── lib-version.sh              ← 버전·changelog 조회 함수(check-docs·new-release 공유)
 │   ├── new-release.sh              ← 릴리즈 끊기 (/release 가 호출)
 │   ├── test-check-docs.sh          ← check-docs 검출 로직 회귀 테스트(CI 실행)
@@ -157,6 +157,7 @@ claude-project-scaffold/
 
 | 파일 | 에이전트 관점 역할 |
 |------|--------------------|
+| `SCAFFOLD-VERSION` | 이 프로젝트가 **받아온 스캐폴드 버전** 한 줄. 업스트림과 비교해 갱신 여부를 판단한다(→ 아래 "스캐폴드 갱신 확인") |
 | `CLAUDE.md` | 세션 시작 시 자동 로드. 핵심 요약 + 룰 `@import` + 산출물 흐름도. **200줄 이하** 유지 |
 | `settings.json` | 팀 공유 설정. `check-docs.sh` 실행 허용 포함. Stop hook 연결은 opt-in(→ `rules/commands.md`) |
 | `rules/project-init.md` | ① 디렉토리 구조·역할 구분(누적 vs 작업단위)·brownfield 주의·부트스트랩 |
@@ -385,6 +386,28 @@ greenfield 추가
 코드 축 ✗ 추가 (순수 greenfield · 문서 선행형)
 - [ ] ③ 역설계를 건너뛰고, 요구사항·아키텍처를 기획 문서에서 도출했는가
 ```
+
+---
+
+## 스캐폴드 갱신 확인 (파생 프로젝트에서)
+
+파생 프로젝트는 `.claude/SCAFFOLD-VERSION`에 **받아온 스캐폴드 버전**을 갖는다. 코드를 diff할
+필요 없이 이 숫자와 업스트림을 비교하면 된다.
+
+```bash
+cat .claude/SCAFFOLD-VERSION                                   # 내가 받은 버전
+curl -s https://raw.githubusercontent.com/ooosm/claude-project-scaffold/main/VERSION   # 업스트림 최신
+```
+
+- **다르면**: 업스트림 `README.md`의 Changelog에서 그 사이 버전들의 항목을 읽고, 필요한 변경만
+  가져온다(전체 덮어쓰기는 brownfield 병합 규칙 §B를 따른다).
+- 가져온 뒤 `.claude/SCAFFOLD-VERSION`을 **손으로** 그 버전으로 고친다. 파생 레포에서
+  `/release`는 이 파일을 건드리지 않는다 — 스탬프는 "내 버전"이 아니라 "받아온 버전"이다.
+- 상세 이력이 필요하면 업스트림 `.claude/workspace/changelog.md`를 본다(릴리즈 단위 요약은
+  README Changelog).
+
+> 스탬프가 없는 파생 프로젝트(v0.2.0 이전에 만든 것)는 값을 알 수 없다. 다음 동기화 때
+> 그 시점의 버전을 적어 넣는 것으로 시작한다 — 소급 추정하지 않는다.
 
 ---
 

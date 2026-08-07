@@ -6,6 +6,10 @@
 #   4) DEC 댕글링 참조      : 룰·문서가 참조한 DEC 번호가 로그에 정의돼 있는지
 #   5) changelog 스테일     : changelog 갱신 없이 feat/fix 커밋이 쌓였는지
 #   6) 버전 3자 일치        : 버전 SoT ↔ changelog 최신 릴리즈 ↔ git tag
+#   7) BACKLOG 상태         : 완료 신호(릴리즈 changelog·완료 체크박스) ↔ 표 상태, 댕글링 참조
+#   8) README 버전 반영     : 직전 릴리즈는 README 에 있는데 현재 버전이 없는지
+#   9) 필수 납품 문서       : README·CLAUDE.md 가 아예 없는지 (§1 안에서 수행)
+#  10) 스캐폴드 스탬프      : .claude/SCAFFOLD-VERSION ↔ VERSION (템플릿 레포 한정)
 # 기본은 경고만(exit 0). --strict 는 경고 발생 시 exit 1 (CI/커밋 전 검사용).
 set -u
 

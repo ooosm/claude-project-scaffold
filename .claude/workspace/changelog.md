@@ -9,6 +9,25 @@
 
 ## [Unreleased]
 
+### 2026-08-07
+- **feat**: `check-docs` §8 릴리즈 버전의 README 반영 검사 — **직전 릴리즈가 README에 있는데
+  현재 버전이 없으면** 경고. 둘 다 없으면 스킵(버전을 README에 적지 않는 프로젝트에 오탐 0).
+  직전 버전은 changelog → git tag 순으로 찾는다. 버전 SoT·changelog·tag가 모두 맞아도
+  README 버전 표가 빈 채로 릴리즈된 사고가 발단(§6은 그 셋만 본다). 관련 DEC-017 / BACKLOG-004
+- **feat**: `check-docs` §9 필수 납품 문서 존재 검사 — `README.md` + `CLAUDE.md`(루트 또는
+  `.claude/` 중 하나). `REAL_DOCS`가 glob이라 "문서가 없음"은 조용히 통과하던 구멍을 막는다.
+  `user-guide`·`how-it-works`는 필수로 두지 않는다(DEC-009의 lazy 생성 규정과 모순되므로).
+  관련 DEC-018
+- **feat**: 스캐폴드 버전 스탬프 `.claude/SCAFFOLD-VERSION` + §10 일치 검사. 파생 레포가
+  받아온 버전을 코드 diff 없이 알 수 있다. 스탬프 쓰기(`/release`)와 일치 검사 모두
+  **템플릿 레포 한정** — 파생 레포에서 덮으면 스탬프가 거짓말이 된다. 관련 DEC-019
+- **fix**: `test-check-docs.sh` 픽스처가 `README.md`·`CLAUDE.md`를 만들도록 보강하고,
+  "더티 문서를 **지우면** 통과" 케이스를 **"깨끗한 파일로 교체하면 통과"**로 바꿨다.
+  자식 레포가 §9를 자체 이식했다 6건 실패로 되돌린 원인이 이 둘이었다.
+- **test**: §8 6건(정탐·자기해소·스킵·태그 폴백·버전 문자열 경계·policy none),
+  §9 3건(누락 검출·`--strict` exit 1·`.claude/CLAUDE.md` 단독 허용), §10 2건(템플릿 레포
+  불일치 검출·파생 레포 무시) 추가.
+
 ### 2026-08-05
 - **feat**: `check-docs` §7 BACKLOG 상태 정합성 검사 신설 — (A) changelog의 `feat`/`fix`
   항목이 언급한 BACKLOG인데 표가 미완료, (B) `- [x]` 완료 체크박스가 언급했는데 표가 미완료,
