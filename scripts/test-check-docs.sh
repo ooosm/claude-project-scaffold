@@ -438,5 +438,24 @@ OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q 'README 버전 미반영' \
   && fail "policy none 인데 §8 경고" || pass "§8 version-policy: none 이면 OFF"
 
+# ── §10 스캐폴드 버전 스탬프 일치 ─────────────────────────────────────────
+# 스탬프는 파생 레포가 "내가 받은 스캐폴드 버전"을 아는 유일한 근거다. 업스트림에서 VERSION 과
+# 어긋나면 그 순간부터 거짓말이 되므로 템플릿 레포에서만 일치를 검사한다.
+P="$T/stamp"; new_project "$P"
+printf '%s\n' '0.1.0' > "$P/VERSION"
+printf '%s\n' '0.9.9' > "$P/.claude/SCAFFOLD-VERSION"
+printf '%s\n' '# 스켈레톤' > "$P/_skeleton-README.md"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q '스탬프 불일치' \
+  && pass "§10 스탬프 ↔ VERSION 불일치 검출" || fail "§10 스탬프 불일치를 놓침"
+
+# 파생 레포(스켈레톤 없음)에서는 두 값이 다른 게 정상이다 — 검사하지 않는다.
+P="$T/stamp-derived"; new_project "$P"
+printf '%s\n' '4.10.0' > "$P/VERSION"
+printf '%s\n' '0.2.0' > "$P/.claude/SCAFFOLD-VERSION"
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q '스탬프' \
+  && fail "파생 레포에서 스탬프 불일치를 경고(오탐)" || pass "§10 파생 레포에서는 검사 안 함"
+
 if [ "$FAIL" -eq 0 ]; then echo "✅ test-check-docs: 전부 통과"; exit 0; fi
 echo "❌ test-check-docs: 실패"; exit 1

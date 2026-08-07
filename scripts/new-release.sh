@@ -79,6 +79,15 @@ GOT="$(sot_version)"
 [ "$GOT" = "$NEXT" ] || die "SoT 기록 검증 실패: $SOT_F 에서 '$NEXT' 를 기대했으나 '$GOT' 을 읽었습니다.
    파일을 확인하고 되돌리세요 (git checkout -- $SOT_F)."
 
+# ── 2-1. 스캐폴드 버전 스탬프 ────────────────────────────────────────────
+# **템플릿 레포에서만** 쓴다. 파생 레포에서 이걸 덮으면 "받아온 스캐폴드 버전"이 자기 버전으로
+# 바뀌어 스탬프가 거짓말이 된다 — 스탬프의 존재 이유가 사라진다.
+STAMP_UPDATED="no"
+if [ -f "_skeleton-README.md" ] && [ -f ".claude/SCAFFOLD-VERSION" ]; then
+  printf '%s\n' "$NEXT" > .claude/SCAFFOLD-VERSION
+  STAMP_UPDATED="yes"
+fi
+
 # ── 3. changelog 마감 ────────────────────────────────────────────────────
 # [Unreleased] 헤딩을 릴리즈 헤딩으로 바꾸고, 그 위에 새 빈 [Unreleased] 를 넣는다.
 # 기존 Unreleased 본문은 그대로 릴리즈 섹션의 내용이 된다.
@@ -111,6 +120,7 @@ fi
 printf '✅ %s → %s\n' "$CUR" "$NEXT"
 printf '   %-28s 버전 SoT 갱신 (재검증 통과)\n' "$SOT_F"
 printf '   %-28s [Unreleased] 마감 + 새 [Unreleased] 생성\n' "$CHANGELOG_PATH"
+[ "$STAMP_UPDATED" = "yes" ] && printf '   %-28s 스탬프 갱신\n' ".claude/SCAFFOLD-VERSION"
 if [ "$README_UPDATED" = "yes" ]; then
   printf '   %-28s v%s 골격 삽입\n' "README.md" "$NEXT"
 else

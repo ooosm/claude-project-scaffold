@@ -275,6 +275,18 @@ if command -v detect_version_sot >/dev/null 2>&1 && [ -f "README.md" ]; then
   fi
 fi
 
+# ── 10. 스캐폴드 버전 스탬프 일치 검사 (템플릿 레포 한정) ────────────────
+# .claude/SCAFFOLD-VERSION 은 `.claude/` 와 함께 복사되어 파생 레포에 따라간다. 파생 레포에서
+# 이 값과 VERSION 이 다른 것은 **정상**이다(스탬프=받아온 스캐폴드 버전, VERSION=자기 버전).
+# 그래서 일치 검사는 업스트림(_skeleton-README.md 가 있는 템플릿 레포)에서만 한다.
+SCAFFOLD_STAMP=".claude/SCAFFOLD-VERSION"
+if [ -f "_skeleton-README.md" ] && [ -f "$SCAFFOLD_STAMP" ] && [ -f "VERSION" ]; then
+  s=$(head -1 "$SCAFFOLD_STAMP" | tr -d '[:space:]')
+  v=$(head -1 VERSION | tr -d '[:space:]')
+  [ "$s" = "$v" ] \
+    || warn "스탬프 불일치: $SCAFFOLD_STAMP 는 '$s' 인데 VERSION 은 '$v' — /release 로 함께 갱신하세요"
+fi
+
 # ── 결과 ─────────────────────────────────────────────────────────────────
 if [ "$WARN" -eq 0 ]; then
   echo "✅ check-docs: 문제 없음"
