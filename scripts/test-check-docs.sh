@@ -341,6 +341,25 @@ OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
 echo "$OUT" | grep -q 'BACKLOG-002' \
   && pass "§7-A feat 항목의 연속 줄 ID도 검출" || fail "여러 줄 feat 항목의 ID를 놓침"
 
+# 백틱 인용은 완료 언급이 아니다 — changelog 는 과거 문구를 그대로 인용하는 일이 잦다.
+# (이 레포에서 실제로 났다: 오탐 대응을 기록한 fix 항목이 그 오탐 사례를 인용해 자기 자신을 잡았다)
+P="$T/backlog-a-quote"; new_project "$P"
+cat > "$P/.claude/workspace/todo.md" <<'EOF'
+# TODO
+## 백로그 (BACKLOG)
+| ID | 제목 | 상태 | 근거 |
+|----|------|------|------|
+| BACKLOG-001 | 아직 대기 중인 항목 | ⏳ 대기 | DEC-014 |
+EOF
+cat > "$P/.claude/workspace/changelog.md" <<'EOF'
+# Changelog
+## v0.2.0 (2026-08-07)
+- **fix**: 검사 오탐 수정 — `- **docs**: … BACKLOG-001로 기록.` 줄에서 재현됐다.
+EOF
+OUT="$(cd "$P" && bash scripts/check-docs.sh 2>&1)"
+echo "$OUT" | grep -q 'BACKLOG-001' \
+  && fail "백틱 인용을 완료 언급으로 오탐" || pass "§7-A 백틱 인용은 완료 신호 아님"
+
 # 표에서 사라진 항목을 문서가 계속 참조하는 경우(§4 DEC 댕글링과 같은 실패 모드).
 P="$T/backlog-c"; new_project "$P"
 cat > "$P/.claude/workspace/todo.md" <<'EOF'

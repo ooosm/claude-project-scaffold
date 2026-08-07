@@ -227,14 +227,17 @@ if [ -f "$TODO" ] && [ -n "$(backlog_ids)" ]; then
   # (이 레포 자신의 v0.1.0 "글로벌 룰 버전 관리를 README 로드맵 + BACKLOG-001로 기록" 줄에서
   # 실제로 재현했다). feat/fix 만 세는 것은 §5가 이미 쓰는 규약과 같다. 근거: DEC-016.
   # 항목은 여러 줄에 걸치므로 `- ` 로 시작하는 줄에서 타입을 판정하고 다음 항목까지 유지한다.
+  # 코드펜스·백틱을 먼저 걷어낸다 — changelog 는 과거 문구를 **인용**하는 일이 잦고(오탐
+  # 사례를 기록할 때 특히), 인용은 "이 항목이 그 BACKLOG를 끝냈다"는 뜻이 아니다.
+  # §4(DEC 댕글링)·§7-C 가 쓰는 것과 같은 제외 규칙이다.
   CL="${CHANGELOG_PATH:-.claude/workspace/changelog.md}"
   if [ -f "$CL" ]; then
-    for id in $(awk '
+    for id in $(strip_fences "$CL" | strip_inline_code | awk '
         /^##[[:space:]]+v?[0-9]+\.[0-9]+\.[0-9]+/ { rel = 1 }
         !rel { next }
         /^[[:space:]]*-[[:space:]]/ { keep = ($0 ~ /^[[:space:]]*-[[:space:]]*\*\*(feat|fix)\*\*/) }
         /^#/ { keep = 0 }
-        keep' "$CL" \
+        keep' \
                 | grep -oE 'BACKLOG-[0-9]+' | sort -u); do
       st=$(backlog_status "$id")
       [ -n "$st" ] && ! backlog_done "$st" \

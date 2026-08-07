@@ -1,7 +1,8 @@
 # claude-project-scaffold
 
-**v0.1.0** — 버전은 루트 `VERSION` 파일이 정본이며 `/release`로 끊습니다. 대상 프로젝트는
-"scaffold vX.Y.Z 기준으로 적용"을 DEC에 남겨 두면 이후 상류 갱신분을 가려낼 수 있습니다.
+**v0.2.0** — 버전은 루트 `VERSION` 파일이 정본이며 `/release`로 끊습니다. 파생 프로젝트는
+`.claude/SCAFFOLD-VERSION`에 받아온 버전이 찍혀 있으니 이 값과 비교하십시오
+(→ [§스캐폴드 갱신 확인](#스캐폴드-갱신-확인-파생-프로젝트에서)).
 
 > 코딩 에이전트(Claude Code 등)가 신규/기존 프로젝트에 **일관된 개발 방법론**을 부트스트랩하기 위한
 > 재사용 스캐폴드 레포. 결정 추적 · 요구사항 관리 · 문서 동기화 · UI 목업 게이트가 처음부터
@@ -483,6 +484,21 @@ curl -s https://raw.githubusercontent.com/ooosm/claude-project-scaffold/main/VER
 
 > 외부 공개용 요약. 내부 상세 이력은 `.claude/workspace/changelog.md`.
 > 릴리즈는 `/release <major|minor|patch>` 로 끊습니다.
+
+### v0.2.0 (2026-08-07)
+
+파생 프로젝트 사용 피드백을 반영한 릴리즈. 대외 문서가 낡는 것을 기계로 잡고, 파생 프로젝트가
+받아온 스캐폴드 버전을 알 수 있게 했습니다.
+
+- **feat**: `.claude/SCAFFOLD-VERSION` — 파생 프로젝트가 받아온 스캐폴드 버전. 코드를 diff하지
+  않고 업스트림과 숫자만 비교하면 됩니다. `/release`가 함께 갱신합니다.
+- **feat**: `check-docs` **§8 README 버전 반영 검사** — 직전 릴리즈는 README에 있는데 현재
+  버전이 없으면 경고합니다. 버전을 README에 적지 않는 프로젝트에서는 검사를 건너뜁니다.
+- **feat**: `check-docs` **§9 필수 납품 문서 존재 검사** — `README.md`와 `CLAUDE.md`(루트
+  또는 `.claude/`)가 아예 없는 상태를 잡습니다.
+- **feat**: `check-docs` **§7 BACKLOG 상태 정합성 검사** — 릴리즈된 changelog나 완료
+  체크박스가 언급한 BACKLOG인데 표가 미완료면 경고합니다.
+- **docs**: 완료 시 자동 갱신 묶음이 8항목이 되었습니다(BACKLOG 표 갱신이 별도 항목으로 승격).
 
 ### v0.1.0 (2026-07-27)
 
