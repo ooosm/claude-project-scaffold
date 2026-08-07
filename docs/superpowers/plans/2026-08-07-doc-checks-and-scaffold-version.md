@@ -1,7 +1,7 @@
 ---
 related: [BACKLOG-004, DEC-017, DEC-018, DEC-019]
 spec: docs/superpowers/specs/2026-08-07-doc-checks-and-scaffold-version-design.md
-status: draft
+status: done
 date: 2026-08-07
 ---
 

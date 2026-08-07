@@ -1,6 +1,6 @@
 ---
 related: [BACKLOG-004, DEC-017, DEC-018, DEC-019]
-status: draft
+status: done
 date: 2026-08-07
 ---
 
